@@ -72,27 +72,24 @@ Interfejs użytkownika Digital Dungeons został zaprojektowany z myślą o prost
 ## Roadmapa Rozwoju
 
 ### Faza 1: MVP
-- [x] Podstawowa struktura projektu
-- [ ] Funkcjonalny edytor gier z podstawowymi funkcjami
-- [ ] Gameplay engine z podstawowymi mechanikami
-- [ ] Podstawowy system użytkowników
-- [ ] Proste publikowanie i przeglądanie gier
+- [x] Podstawowa struktura projektu <10.10.25>
+- [ ] Funkcjonalny edytor gier z podstawowymi funkcjami (bez konwersacji) <15.11.25>
+- [ ] Gameplay engine z podstawowymi mechanikami <15.11.25>
+- [ ] Podstawowy system użytkowników <1.12.25>
+- [ ] Proste publikowanie i przeglądanie gier <1.12.25>
 
 ### Faza 2: Rozszerzenia
-- [ ] Marketplace z pełną funkcjonalnością
-- [ ] Zaawansowane funkcje edytora
-- [ ] System ocen i komentarzy
-- [ ] Ulepszone UI/UX
-- [ ] Optymalizacja wydajności
-- [ ] Funkcje społecznościowe
-- [ ] System tagów i kategorii gier
-- [ ] Strona główna z informacjami o projekcie
+- [ ] Marketplace <15.12.25>
+- [ ] System ocen i komentarzy <15.12.25>
+- [ ] System tagów i kategorii gier <27.12.25>
+- [ ] Zaawansowane funkcje edytora (np. konwersacje) <1.01.26>
+- [ ] Strona główna z informacjami o projekcie <1.01.26>
+- [ ] Ulepszone UI/UX <1.01.26>
+- [ ] Optymalizacja wydajności <1.01.26>
 
-### Faza 3: Przyszłe Możliwości
+### Faza 3: Przyszłe Możliwości <Lato 2026>
 - [ ] System osiągnięć i progresji
-- [ ] Export gier do innych formatów
 - [ ] Zaawansowane narzędzia analityczne dla twórców
-- [ ] Aplikacja mobilna (Kotlin Jetpack Compose)
 
 ## Stack Technologiczny
 
@@ -106,24 +103,8 @@ Interfejs użytkownika Digital Dungeons został zaprojektowany z myślą o prost
 - **MySQL** - Relacyjna baza danych do przechowywania gier i użytkowników
 
 ### Przyszłe Rozszerzenia
-- **Kotlin Jetpack Compose** - Natywna aplikacja mobilna na Android
 - **Redis** - Cache dla lepszej wydajności
 - **WebSocket** - Real-time features dla współpracy
-
-## Struktura Projektu
-
-```
-Digital-Dungeons/
-├── frontend/                 # Aplikacja Next.js
-│   ├── src/
-│   │   ├── app/             # App Router (Next.js 13+)
-│   │   ├── components/      # Komponenty React
-│   │   ├── lib/            # Utilities i helpers
-│   │   └── styles/         # Style CSS/Tailwind
-│   └── public/             # Statyczne zasoby
-├── docs/                   # Dokumentacja projektu
-└── README.md              # Ten plik
-```
 
 ## Design Philosophy
 
@@ -145,5 +126,5 @@ Projekt jest rozwijany na potrzeby edukacyjne. Szczegóły licencji będą dodan
 ---
 
 **Rozpoczęto:** Październik 2025  
-**Deadline:** Luty 2026  
+**Deadline:** Styczeń 2026  
 **Status:** W rozwoju
