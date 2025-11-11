@@ -49,7 +49,8 @@ export const sketchFactory = (p) => {
 
     // ----- p5 lifecycle -----
     p.setup = () => {
-        p.createCanvas(p.windowWidth, p.windowHeight);
+        const cnv = p.createCanvas(p.windowWidth, p.windowHeight);
+        cnv.elt.id = 'mapCanvas';
         p.pixelDensity(window.devicePixelRatio || 1);
         centreCamera();
 
@@ -59,7 +60,7 @@ export const sketchFactory = (p) => {
             : null;
 
         if (seed && seed.rooms && seed.rooms.length) {
-            for (const r of seed.rooms) spawnRoom(r.gx, r.gy); // uses local spawnRoom
+            for (const r of seed.rooms) spawnRoom(r.gx, r.gy, r.meta); // uses local spawnRoom
             if (seed.selected) {
                 const [sx, sy] = seed.selected.split(',').map(Number);
                 selectOnly(sx, sy);
@@ -230,10 +231,6 @@ export const sketchFactory = (p) => {
         for (let x = startX; x <= endX; x += cw) p.line(x, top, x, bottom);
         // Horizontal lines
         for (let y = startY; y <= endY; y += ch) p.line(left, y, right, y);
-
-        // Crosshair at world origin
-        p.line(-1000, 0, 1000, 0);
-        p.line(0, -1000, 0, 1000);
     }
 
     function drawRoomsCulled(view) {
@@ -423,11 +420,13 @@ export const sketchFactory = (p) => {
 
     // ----- Mouse / wheel -----
     p.mouseMoved = () => {
+        if (inputsLocked()) return;
         const w = screenToWorld(p.mouseX, p.mouseY);
         updateHover(w.x, w.y);
     };
 
     p.mouseDragged = () => {
+        if (inputsLocked()) return;
         if (isCameraLocked()) return;
 
         // Continue panning on RIGHT/MIDDLE drag or while SPACE is held
@@ -450,6 +449,7 @@ export const sketchFactory = (p) => {
     };
 
     p.mousePressed = () => {
+        if (inputsLocked()) return;
         // If camera is locked, only allow central plus click-through
         if (isCameraLocked()) {
             const allowCentralPlus = (rooms.size === 0 && hovered.type === 'plus-center');
@@ -500,6 +500,7 @@ export const sketchFactory = (p) => {
     };
 
     p.mouseWheel = (e) => {
+        if (inputsLocked()) return;
         if (isCameraLocked()) return false;
 
         const delta = -e.delta;
@@ -573,58 +574,80 @@ export const sketchFactory = (p) => {
 
     function drawRoomContents(room) {
         if (!room.meta) return;
+
+        // Proportional world-units (relative to ROOM_H)
+        const ICON    = ROOM_H * 0.14;   // ~14% of room height
+        const PAD     = ROOM_H * 0.15;   // padding near the edges
+        const GAP     = ROOM_H * 0.06;   // spacing between icons
+        const STROKE  = ROOM_H * 0.015;  // line thickness
+        const RADIUS  = ROOM_H * 0.02;   // small corner radius
+        const TAIL    = ROOM_H * 0.04;   // speech-bubble tail size
+
         const rr = roomRect(room.gx, room.gy);
-        const pad = 10 / cam.z;
-        const iconSize = 14 / cam.z;
-        let ix = rr.x + pad;
-        const iy = rr.y + rr.h - pad - iconSize;
-        const gap = 6 / cam.z;
+
+        let ix = rr.x + PAD;
+        const iy = rr.y + rr.h - PAD - ICON;
 
         // Chest
         if (room.meta.hasChest) {
             p.push();
             p.noFill();
             p.stroke('#ffd791');
-            p.strokeWeight(1.5 / cam.z);
-            p.rect(ix, iy, iconSize, iconSize, 2 / cam.z);
-            p.line(ix, iy + iconSize * 0.45, ix + iconSize, iy + iconSize * 0.45);
+            p.strokeWeight(STROKE);
+            p.rect(ix, iy, ICON, ICON, RADIUS);
+            p.line(ix, iy + ICON * 0.45, ix + ICON, iy + ICON * 0.45);
             p.pop();
-            ix += iconSize + gap;
+            ix += ICON + GAP;
         }
 
-        // Entity
+        // Entity (M/B/P)
         if (room.meta.entity && room.meta.entity.type) {
             const t = room.meta.entity.type;
             const letter = t === 'monster' ? 'M' : (t === 'boss' ? 'B' : 'P');
+
+            const cx = ix + ICON / 2;
+            const cy = iy + ICON / 2;
+
             p.push();
             p.noFill();
             p.stroke('#9ad1ff');
-            p.strokeWeight(1.5 / cam.z);
-            const cx = ix + iconSize / 2, cy = iy + iconSize / 2;
-            p.ellipse(cx, cy, iconSize, iconSize);
+            p.strokeWeight(STROKE);
+            p.ellipse(cx, cy, ICON, ICON);
+
             p.noStroke();
             p.fill('#9ad1ff');
-            p.textSize(10 / cam.z);
             p.textAlign(p.CENTER, p.CENTER);
-            p.text(letter, cx, cy + (0.5 / cam.z));
+            p.textSize(ICON * 0.7);  // scale text with the icon
+            p.text(letter, cx, cy);
             p.pop();
-            ix += iconSize + gap;
+
+            ix += ICON + GAP;
         }
 
-        // Conversation
+        // Conversation bubble
         if ('conversationId' in (room.meta || {})) {
             p.push();
             p.noFill();
             p.stroke('#c8a1ff');
-            p.strokeWeight(1.5 / cam.z);
-            const w = iconSize, h = iconSize * 0.75;
-            p.rect(ix, iy + (iconSize - h), w, h, 2 / cam.z);
+            p.strokeWeight(STROKE);
+
+            const w = ICON;
+            const h = ICON * 0.75;
+            const rx = ix;
+            const ry = iy + (ICON - h);
+
+            p.rect(rx, ry, w, h, RADIUS);
+
+            const tx = rx + w * 0.25;
+            const ty = ry + h;
             p.triangle(
-                ix + w * 0.25, iy + (iconSize - h) + h,
-                ix + w * 0.25 + 4 / cam.z, iy + (iconSize - h) + h + 4 / cam.z,
-                ix + w * 0.25 + 8 / cam.z, iy + (iconSize - h) + h
+                tx, ty,
+                tx + TAIL, ty + TAIL,
+                tx + TAIL * 2, ty
             );
+
             p.pop();
+            // ix += ICON + GAP; // keep if you’ll ever draw more icons after this
         }
     }
 
@@ -688,6 +711,10 @@ export const sketchFactory = (p) => {
 
     // Lock camera until there is at least one room (or preloaded data populated rooms)
     function isCameraLocked() { return rooms.size === 0; }
+
+    function inputsLocked() {
+        return typeof window !== 'undefined' && !!window.__convActive;
+    }
 
     // EXPORT STATE
     function exportState() {

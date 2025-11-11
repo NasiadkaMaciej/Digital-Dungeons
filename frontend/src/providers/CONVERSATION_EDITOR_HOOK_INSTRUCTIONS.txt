@@ -1,0 +1,42 @@
+The bridge script is loaded on the /editor route layout:
+
+/conversation-editor-bridge.js (must come before any components that might call it).
+
+The overlay mounts once via <ConversationCanvas /> and stays alive; visibility is a z-index flip (no remounting).
+
+-----
+
+
+
+// Show overlay when user opens the “Dialogue” tab
+function onDialogueTabOpen(roomId) {
+  // 1) show it
+  ConversationEditorBridge.setVisible(true);
+
+  // 2) load this room’s conversation
+  fetch(`/api/rooms/${roomId}/conversation`)
+    .then(r => r.json())
+    .then(data => ConversationEditorBridge.replaceState(data))
+    .catch(() => ConversationEditorBridge.replaceState({ nodes: [], selected: null }));
+}
+
+// You can also hide it on tab close:
+function onDialogueTabClose() {
+  ConversationEditorBridge.setVisible(false);
+}
+
+
+-----
+
+
+const state = {
+  nodes: [
+    { id: '0,0', gx: 0, gy: 0, parentId: null,  meta: { label: 'Opening line' } },
+    { id: '1,0', gx: 1, gy: 0, parentId: '0,0', meta: { label: 'Yes' } },
+    { id: '1,1', gx: 1, gy: 1, parentId: '0,0', meta: { label: 'No' } },
+    { id: '2,0', gx: 2, gy: 0, parentId: '1,0', meta: { label: 'Follow-up' } },
+  ],
+  selected: '0,0',
+};
+
+window.ConversationEditorBridge?.replaceState(state);
