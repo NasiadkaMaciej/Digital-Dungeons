@@ -11,7 +11,7 @@ export default function EditorPage() {
                 <NoScroll>
                     {/* Base map editor */}
                     <RPGEditorCanvas />
-                    {/* Conversations overlay (toggle with "C") */}
+                    {/* Conversations overlay ( DEBUG toggle with "C") */}
                     <ConversationCanvas />
                 </NoScroll>
             </ConversationBridgeProvider>

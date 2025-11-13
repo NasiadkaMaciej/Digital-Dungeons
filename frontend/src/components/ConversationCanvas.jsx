@@ -6,7 +6,7 @@ export default function ConversationCanvas() {
     const containerRef = useRef(null);
     const p5Ref = useRef(null);
     const mountedRef = useRef(false);
-    const [active, setActive] = useState(true); // true => on top
+    const [active, setActive] = useState(false);
     const pendingStateRef = useRef(null);       // queue for early replaceState calls
 
     // below the useState/useRef lines
@@ -19,7 +19,7 @@ export default function ConversationCanvas() {
         };
     }, [active]);
 
-    // Dev-only keyboard toggle (optional)
+    // Dev-only keyboard toggle (optional) -------------------------------------- DEBUG
     useEffect(() => {
         const onKey = (e) => {
             if (e.code === 'KeyC') {
@@ -31,6 +31,7 @@ export default function ConversationCanvas() {
         window.addEventListener('keydown', onKey, { capture: true });
         return () => window.removeEventListener('keydown', onKey, { capture: true });
     }, []);
+    // --------------------------------------------------------------------------------
 
     // Bind programmatic controls from the bridge
     useEffect(() => {

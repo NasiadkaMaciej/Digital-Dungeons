@@ -1,8 +1,4 @@
-// Conversation Editor – p5 Instance Mode (tree-ish, folder-like UI)
-// Behaviour:
-// - A node's first child is created via RIGHT "+" (only shown when it has 0 children)
-// - If a node is itself a child, and it's the bottom-most among its siblings, it shows a BOTTOM "+" to append a new sibling below.
-// - Parent connects to all its direct children in the next column via a horizontal->vertical bus.
+// Conversation Editor – p5 Instance Mode
 
 const NODE_W = 220;
 const NODE_H = 60;
@@ -105,7 +101,7 @@ export const conversationSketchFactory = (p) => {
             try { p.redraw(); } catch {}
         };
 
-        // robust panning with pointer events
+        // panning with pointer events
         if (c) {
             const rectOf = () => c.getBoundingClientRect();
             const onDown = (e) => {
@@ -367,18 +363,24 @@ export const conversationSketchFactory = (p) => {
 
     // ---------- helpers ----------
     function key(gx,gy){ return `${gx},${gy}`; }
+
     function centre(){ cam.x = p.width/2; cam.y = p.height/2; cam.z = 1; }
+
     function isLocked(){ return nodes.size === 0; }
+
     function screenToWorld(px,py){ return { x:(px-cam.x)/cam.z, y:(py-cam.y)/cam.z }; }
+
     function boundsWorld(){
         const tl = screenToWorld(0,0), br = screenToWorld(p.width,p.height);
         return { left:Math.min(tl.x,br.x), right:Math.max(tl.x,br.x), top:Math.min(tl.y,br.y), bottom:Math.max(tl.y,br.y) };
     }
+
     function rect(gx,gy){
         const cw = NODE_W + CELL_X_GAP, ch = NODE_H + CELL_Y_GAP;
         const x = gx*cw - NODE_W/2, y = gy*ch - NODE_H/2;
         return { x, y, w:NODE_W, h:NODE_H };
     }
+
     function intersect(a,b){ return !(a.x+a.w<b.x || b.x+b.w<a.x || a.y+a.h<b.y || b.y+b.h<a.y); }
 
     function drawGrid(){
@@ -403,6 +405,7 @@ export const conversationSketchFactory = (p) => {
         p.pop();
     }
     function plusRightRect(rr){ return { x: rr.x + rr.w + CELL_X_GAP/2 - PLUS_SIZE/2, y: rr.y + rr.h/2 - PLUS_SIZE/2, s: PLUS_SIZE }; }
+
     function plusBottomRect(rr){ return { x: rr.x + rr.w/2 - PLUS_SIZE/2, y: rr.y + rr.h + CELL_Y_GAP/2 - PLUS_SIZE/2, s: PLUS_SIZE }; }
 
     function drawLabel(n, rr){
@@ -603,7 +606,7 @@ export const conversationSketchFactory = (p) => {
         parentColor.clear();
         for (const [k, v] of newParentColor) parentColor.set(k, v);
 
-        // (Optional) notify snapshot so the host can reconcile ordering if needed
+        // notify snapshot so the host can reconcile ordering if needed
         window.ConversationEditorBridge?.notifyStateSnapshot?.(exportState());
     }
 

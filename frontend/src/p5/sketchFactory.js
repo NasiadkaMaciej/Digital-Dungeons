@@ -68,7 +68,6 @@ export const sketchFactory = (p) => {
             dataFromCallback = {}; // mark as “has data”
         }
 
-        // Prevent context menu on right-drag panning (bind to canvas only)
         const c = p.canvas || p._renderer?.elt;
         // Prevent context menu on right-drag panning (bind to canvas only)
         contextMenuHandler = (e) => e.preventDefault();
@@ -80,7 +79,7 @@ export const sketchFactory = (p) => {
 
             const onPointerDown = (e) => {
                 // buttons bitmask: 1=left, 2=right, 4=middle
-                const rightOrMiddle = (e.button === 2 || e.button === 1 /* middle is 1 in e.button */) || (e.buttons & 0b110);
+                const rightOrMiddle = (e.button === 2 || e.button === 1) || (e.buttons & 0b110);
                 if (!rightOrMiddle) return;
 
                 // start panning
@@ -429,10 +428,10 @@ export const sketchFactory = (p) => {
         if (inputsLocked()) return;
         if (isCameraLocked()) return;
 
-        // Continue panning on RIGHT/MIDDLE drag or while SPACE is held
-        if (isPanning || p.mouseButton === p.RIGHT || p.mouseButton === p.CENTER || p.keyIsDown(32)) {
+        // Continue panning on RIGHT/MIDDLE drag
+        if (isPanning || p.mouseButton === p.RIGHT || p.mouseButton === p.CENTER) {
             if (!isPanning) {
-                // If panning wasn’t started yet (e.g., Space held mid-drag), initialise anchors
+                // If panning wasn’t started yet, initialise anchors
                 isPanning = true;
                 panAnchor.x = p.mouseX;
                 panAnchor.y = p.mouseY;
