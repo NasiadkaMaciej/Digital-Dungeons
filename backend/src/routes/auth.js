@@ -108,7 +108,16 @@ router.get('/me', auth, async (req, res, next) => {
 		if (!user) {
 			return res.status(404).json({ error: 'User not found' });
 		}
-		res.json(user);
+		
+		// Return in same format as login/register
+		res.json({
+			userId: user.user_id,
+			username: user.username,
+			email: user.email,
+			profile_bio: user.profile_bio,
+			join_date: user.join_date,
+			last_login: user.last_login
+		});
 	} catch (error) {
 		next(error);
 	}

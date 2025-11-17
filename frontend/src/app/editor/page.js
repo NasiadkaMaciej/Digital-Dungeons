@@ -26,6 +26,28 @@ export default function EditorPage() {
         }
     }, [searchParams]);
 
+    // Force dark theme while on the editor page to avoid light-mode rendering issues
+    useEffect(() => {
+        try {
+            const root = document.documentElement;
+            const prev = {
+                classList: Array.from(root.classList),
+                localStorage: localStorage.getItem('theme')
+            };
+            // enforce dark mode
+            root.classList.remove('light');
+            root.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            return () => {
+                // restore previous classes
+                root.className = prev.classList.join(' ');
+                if (prev.localStorage != null) localStorage.setItem('theme', prev.localStorage);
+            };
+        } catch (e) {
+            // ignore – defensive
+        }
+    }, []);
+
     const loadGame = async (gameId) => {
         try {
             const game = await gamesApi.getGameById(gameId);
