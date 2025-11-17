@@ -151,6 +151,28 @@
         }
     }
 
+    /**
+     * Host can call this to request current state from the canvas.
+     * The p5 sketch should set this via RPGEditorBridge.setStatePuller(fn).
+     * @returns {EditorState|null}
+     */
+    let statePuller = null;
+    function setStatePuller(fn) {
+        statePuller = validFnOrNull(fn);
+    }
+    function pullStateSnapshot() {
+        if (!statePuller) {
+            console.warn('[RPGEditorBridge] No statePuller configured');
+            return null;
+        }
+        try {
+            return normaliseEditorState(statePuller());
+        } catch (e) {
+            console.warn('[RPGEditorBridge] statePuller threw:', e);
+            return null;
+        }
+    }
+
     // ---------- Normalisation & safeguards ----------
 
     /** @param {any} f */ function validFnOrNull(f) { return (typeof f === 'function') ? f : null; }
@@ -216,6 +238,8 @@
         notifyRoomAdded,
         notifyRoomDeleted,
         notifyStateSnapshot,
+        setStatePuller,
+        pullStateSnapshot,
     });
 
     // UMD-lite: expose as global and CommonJS (if present)

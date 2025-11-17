@@ -134,4 +134,54 @@ export const gamesApi = {
   },
 };
 
+// Likes API
+export const likesApi = {
+  async likeGame(gameId) {
+    return apiRequest(`/likes/${gameId}`, {
+      method: 'POST',
+    });
+  },
+
+  async unlikeGame(gameId) {
+    return apiRequest(`/likes/${gameId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async checkLike(gameId) {
+    return apiRequest(`/likes/check/${gameId}`);
+  },
+
+  async getUserLikes(userId, limit = 50, offset = 0) {
+    return apiRequest(`/likes/user/${userId}?limit=${limit}&offset=${offset}`);
+  },
+};
+
+// Comments API
+export const commentsApi = {
+  async getGameComments(gameId, limit = 50, offset = 0) {
+    return apiRequest(`/comments/game/${gameId}?limit=${limit}&offset=${offset}`);
+  },
+
+  async createComment(gameId, content) {
+    return apiRequest(`/comments/${gameId}`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  },
+
+  async updateComment(commentId, content) {
+    return apiRequest(`/comments/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content }),
+    });
+  },
+
+  async deleteComment(commentId) {
+    return apiRequest(`/comments/${commentId}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
 export { ApiError };

@@ -2,7 +2,7 @@
 import {useEffect} from 'react';
 import {ensureBridge} from "@/app/utils/ensureBridge";
 
-export default function BridgeProvider({ children }) {
+export default function BridgeProvider({ children, initialData = null }) {
     useEffect(() => {
         let cancelled = false;
         (async () => {
@@ -11,14 +11,21 @@ export default function BridgeProvider({ children }) {
                 if (cancelled) return;
 
                 window.RPGEditorBridge.configure({
-                    getInitialData: () => ({
-                        rooms: [
-                            { id: '0,0', gx: 0, gy: 0, meta: { hasChest: true } },
-                            { id: '1,0', gx: 1, gy: 0, meta: { entity: { type: 'monster', id: 'slime' } } },
-                            { id: '0,1', gx: 0, gy: 1, meta: { conversationId: 'welcome_intro' } },
-                        ],
-                        selected: '0,0',
-                    }),
+                    getInitialData: () => {
+                        // If we have initialData from props, use it
+                        if (initialData) {
+                            return initialData;
+                        }
+                        // Otherwise return default example data
+                        return {
+                            rooms: [
+                                { id: '0,0', gx: 0, gy: 0, meta: { hasChest: true } },
+                                { id: '1,0', gx: 1, gy: 0, meta: { entity: { type: 'monster', id: 'slime' } } },
+                                { id: '0,1', gx: 0, gy: 1, meta: { conversationId: 'welcome_intro' } },
+                            ],
+                            selected: '0,0',
+                        };
+                    },
                     onSelectionChange: (id, state) => console.log('[Map] selection:', id, state),
                     onRoomAdded: (room, state)     => console.log('[Map] added:', room, state),
                     onRoomDeleted: (id, state)     => console.log('[Map] deleted:', id, state),
@@ -29,7 +36,7 @@ export default function BridgeProvider({ children }) {
             }
         })();
         return () => { cancelled = true; };
-    }, []);
+    }, [initialData]);
 
     return children;
 }

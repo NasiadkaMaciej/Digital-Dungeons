@@ -65,7 +65,30 @@ export const sketchFactory = (p) => {
                 const [sx, sy] = seed.selected.split(',').map(Number);
                 selectOnly(sx, sy);
             }
-            dataFromCallback = {}; // mark as “has data”
+            dataFromCallback = {}; // mark as "has data"
+        }
+
+        // Register state puller for Save functionality
+        if (typeof window !== 'undefined' && window.RPGEditorBridge && window.RPGEditorBridge.setStatePuller) {
+            window.RPGEditorBridge.setStatePuller(() => {
+                const roomsList = [];
+                for (const [key, room] of rooms.entries()) {
+                    roomsList.push({
+                        id: key,
+                        gx: room.gx,
+                        gy: room.gy,
+                        meta: room.meta || {},
+                    });
+                }
+                let selectedKey = null;
+                for (const [key, room] of rooms.entries()) {
+                    if (room.selected) {
+                        selectedKey = key;
+                        break;
+                    }
+                }
+                return { rooms: roomsList, selected: selectedKey };
+            });
         }
 
         const c = p.canvas || p._renderer?.elt;
