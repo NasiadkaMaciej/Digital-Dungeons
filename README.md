@@ -73,10 +73,10 @@ Interfejs użytkownika Digital Dungeons został zaprojektowany z myślą o prost
 
 ### Faza 1: MVP
 - [x] Podstawowa struktura projektu <10.10.25>
-- [ ] Funkcjonalny edytor gier z podstawowymi funkcjami (bez konwersacji) <15.11.25>
-- [ ] Gameplay engine z podstawowymi mechanikami <15.11.25>
-- [ ] Podstawowy system użytkowników <1.12.25>
-- [ ] Proste publikowanie i przeglądanie gier <1.12.25>
+- [ ] Funkcjonalny edytor gier z podstawowymi funkcjami (bez konwersacji) <4.12.25>
+- [ ] Gameplay engine z podstawowymi mechanikami <4.12.25>
+- [ ] Podstawowy system użytkowników <4.12.25>
+- [ ] Proste publikowanie i przeglądanie gier <4.12.25>
 
 ### Faza 2: Rozszerzenia
 - [ ] Marketplace <15.12.25>

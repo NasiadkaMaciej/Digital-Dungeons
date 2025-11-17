@@ -29,7 +29,6 @@ router.put(
 	auth,
 	[
 		body('profile_bio').optional().trim().isLength({ max: 500 }),
-		body('avatar_url').optional().trim().isURL(),
 	],
 	async (req, res, next) => {
 		try {
@@ -38,33 +37,13 @@ router.put(
 				return res.status(400).json({ errors: errors.array() });
 			}
 
-			const { profile_bio, avatar_url } = req.body;
+			const { profile_bio } = req.body;
 
-			// Note: You'll need to add this method to User model
-			const updates = [];
-			const values = [];
-
-			if (profile_bio !== undefined) {
-				updates.push('profile_bio = ?');
-				values.push(profile_bio);
-			}
-			if (avatar_url !== undefined) {
-				updates.push('avatar_url = ?');
-				values.push(avatar_url);
-			}
-
-			if (updates.length === 0) {
+			if (profile_bio === undefined) {
 				return res.status(400).json({ error: 'No updates provided' });
 			}
 
-			values.push(req.user.userId);
-			await db.execute(
-				`UPDATE users SET ${updates.join(', ')} WHERE user_id = ?`,
-				values
-			);
-
-			const user = await User.findById(req.user.userId);
-			delete user.password;
+			const user = await User.updateProfile(req.user.userId, { profile_bio });
 			res.json({ message: 'Profile updated', user });
 		} catch (error) {
 			next(error);

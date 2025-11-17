@@ -42,6 +42,28 @@ class User {
 		);
 	}
 
+	static async updateProfile(userId, updates) {
+		const fields = [];
+		const values = [];
+
+		if (updates.profile_bio !== undefined) {
+			fields.push('profile_bio = ?');
+			values.push(updates.profile_bio);
+		}
+
+		if (fields.length === 0) {
+			throw new Error('No updates provided');
+		}
+
+		values.push(userId);
+		await db.execute(
+			`UPDATE users SET ${fields.join(', ')} WHERE user_id = ?`,
+			values
+		);
+
+		return await User.findById(userId);
+	}
+
 	static async comparePassword(plainPassword, hashedPassword) {
 		return await bcrypt.compare(plainPassword, hashedPassword);
 	}
