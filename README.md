@@ -75,15 +75,16 @@ Interfejs użytkownika Digital Dungeons został zaprojektowany z myślą o prost
 - [x] Podstawowa struktura projektu <10.10.25>
 - [ ] Funkcjonalny edytor gier z podstawowymi funkcjami (bez konwersacji) <4.12.25>
 - [ ] Gameplay engine z podstawowymi mechanikami <4.12.25>
-- [ ] Podstawowy system użytkowników <4.12.25>
-- [ ] Proste publikowanie i przeglądanie gier <4.12.25>
+- [x] Podstawowy system użytkowników <4.12.25>
+- [x] Proste publikowanie i przeglądanie gier <4.12.25>
 
 ### Faza 2: Rozszerzenia
-- [ ] Marketplace <15.12.25>
-- [ ] System ocen i komentarzy <15.12.25>
+- [x] Marketplace <15.12.25>
+- [x] System ocen i komentarzy <15.12.25>
+- [ ] Wyszukiwarka gier w marketplace i profile <15.12.25>
 - [ ] System tagów i kategorii gier <27.12.25>
 - [ ] Zaawansowane funkcje edytora (np. konwersacje) <1.01.26>
-- [ ] Strona główna z informacjami o projekcie <1.01.26>
+- [x] Strona główna z informacjami o projekcie <1.01.26>
 - [ ] Ulepszone UI/UX <1.01.26>
 - [ ] Optymalizacja wydajności <1.01.26>
 
