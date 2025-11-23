@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/lib/AuthContext';
-import { gamesApi, likesApi } from '@/lib/api';
+import {useAuth} from '@/lib/AuthContext';
+import {gamesApi, likesApi} from '@/lib/api';
 
 export default function MarketplacePage() {
   const { isAuthenticated } = useAuth();
@@ -49,7 +49,7 @@ export default function MarketplacePage() {
 
     try {
       const isLiked = likedGames.has(gameId);
-      
+
       if (isLiked) {
         await likesApi.unlikeGame(gameId);
         setLikedGames(prev => {
@@ -57,16 +57,16 @@ export default function MarketplacePage() {
           newSet.delete(gameId);
           return newSet;
         });
-        setGames(games.map(g => 
-          g.game_id === gameId 
+        setGames(games.map(g =>
+          g.game_id === gameId
             ? { ...g, likes_count: Math.max(0, g.likes_count - 1) }
             : g
         ));
       } else {
         await likesApi.likeGame(gameId);
         setLikedGames(prev => new Set(prev).add(gameId));
-        setGames(games.map(g => 
-          g.game_id === gameId 
+        setGames(games.map(g =>
+          g.game_id === gameId
             ? { ...g, likes_count: g.likes_count + 1 }
             : g
         ));
@@ -79,7 +79,7 @@ export default function MarketplacePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-foreground/60">Loading games...</p>
+        <p className="text-foreground/60 font-mono">Loading games...</p>
       </div>
     );
   }
@@ -88,19 +88,16 @@ export default function MarketplacePage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Marketplace</h1>
-          <p className="text-foreground/60 mt-2">
-            Discover and play games created by the community
+          <h1 className="text-5xl font-black">Marketplace</h1>
+          <p className="text-foreground/60 mt-3 mb-5 font-mono">
+              of all the worlds created by our growing community of nerds <span style={{whiteSpace: "nowrap"}}>(⌐⊙_⊙)</span>.
           </p>
         </div>
       </div>
 
       {games.length === 0 ? (
-        <div className="text-center py-12 bg-foreground/5 rounded-lg">
-          <p className="text-foreground/60">No published games yet.</p>
-          <p className="text-foreground/60 mt-2 text-sm">
-            Be the first to publish a game!
-          </p>
+        <div className="text-center py-12 bg-background border-1 border-foreground/5 rounded-lg font-mono">
+            <p className="text-foreground/60">No published games yet <span style={{whiteSpace: "nowrap"}}>( ✜︵✜ )</span>.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -175,4 +172,3 @@ export default function MarketplacePage() {
     </div>
   );
 }
-

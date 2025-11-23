@@ -1,8 +1,8 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import {Geist, Geist_Mono} from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { AuthProvider } from "../lib/AuthContext";
+import {AuthProvider} from "../lib/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +28,7 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>
           <Header />
-          <main className="min-h-[calc(100vh-200px)] px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
+          <main className="min-h-[calc(100vh-200px)] px-10 py-8 max-w-7xl mx-auto">
             {children}
           </main>
           <Footer />

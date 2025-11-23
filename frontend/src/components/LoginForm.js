@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/AuthContext';
+import {useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {useAuth} from '@/lib/AuthContext';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -39,11 +39,11 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
-      {error && (
-        <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
+        {error && (
+            <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-500 px-4 py-3 rounded">
+                {error}
+            </div>
+        )}
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium mb-2">
@@ -56,7 +56,7 @@ export default function LoginForm() {
           value={formData.email}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-foreground/5 border border-foreground/10 rounded focus:outline-none focus:border-blue-500 text-foreground"
+          className="w-full px-4 py-2 bg-foreground/5 border border-foreground/10 rounded focus:outline-none focus:border-red-500 text-foreground font-mono"
         />
       </div>
 
@@ -72,14 +72,14 @@ export default function LoginForm() {
           onChange={handleChange}
           required
           minLength={6}
-          className="w-full px-4 py-2 bg-foreground/5 border border-foreground/10 rounded focus:outline-none focus:border-blue-500 text-foreground"
+          className="w-full px-4 py-2 bg-foreground/5 border border-foreground/10 rounded focus:outline-none focus:border-red-500 text-foreground font-mono"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded font-medium transition-colors"
+        className="w-full bg-red-500 hover:bg-red-700 text-red-50 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded font-medium transition-colors focus:outline-2 focus:outline-red-500 focus:outline-offset-5 mt-10"
       >
         {loading ? 'Logging in...' : 'Login'}
       </button>
