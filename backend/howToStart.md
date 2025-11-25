@@ -39,3 +39,8 @@ mysql -u ddungeons -p digital_dungeons < init-db.sql
 ```
 
 Wpisz hasło: `your_secure_password`
+
+### 5. Startowanie backendu
+```bash
+npm start
+```
