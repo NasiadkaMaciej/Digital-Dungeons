@@ -129,3 +129,12 @@ Projekt jest rozwijany na potrzeby edukacyjne. Szczegóły licencji będą dodan
 **Rozpoczęto:** Październik 2025  
 **Deadline:** Styczeń 2026  
 **Status:** W rozwoju
+
+## API Endpoints
+
+### User Authentication
+- **POST /api/login**: Authenticate a user with email and password.
+- **POST /api/register**: Register a new user with username, email, and password.
+
+### Games
+- **GET /api/games**: Fetch a list of all published games.

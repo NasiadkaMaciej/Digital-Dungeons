@@ -80,3 +80,33 @@ CREATE TABLE comments (
     INDEX idx_user (user_id),
     INDEX idx_date (date_posted)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO users (username, email, password, profile_bio)
+VALUES 
+('tester1', 'tester1@example.com', 'hashedpassword1', 'Bio for tester1'),
+('tester2', 'tester2@example.com', 'hashedpassword2', 'Bio for tester2'),
+('testuser', 'testuser@example.com', 'hashedpassword123', 'Test user for login functionality');
+
+-- Sample Games
+INSERT INTO games (title, description, author_id, game_content, is_published)
+VALUES
+('Dungeon of Doom', 'Classic dungeon crawler.', 1, '{"rooms":[], "meta":{}}', TRUE),
+('Forest Quest', 'Adventure in the enchanted forest.', 2, '{"rooms":[], "meta":{}}', TRUE);
+
+-- Sample Playthroughs
+INSERT INTO playthroughs (game_id, user_id, game_state, status)
+VALUES
+(1, 1, '{"currentRoom":1,"inventory":[]}', 'in_progress'),
+(2, 2, '{"currentRoom":2,"inventory":["sword"]}', 'completed');
+
+-- Sample Likes
+INSERT INTO likes (user_id, game_id)
+VALUES
+(1, 2),
+(2, 1);
+
+-- Sample Comments
+INSERT INTO comments (game_id, user_id, content)
+VALUES
+(1, 2, 'Great game!'),
+(2, 1, 'Loved the story!');
