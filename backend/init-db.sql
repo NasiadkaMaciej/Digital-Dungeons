@@ -81,11 +81,10 @@ CREATE TABLE comments (
     INDEX idx_date (date_posted)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- password: hashedpassword1
 INSERT INTO users (username, email, password, profile_bio)
 VALUES 
-('tester1', 'tester1@example.com', 'hashedpassword1', 'Bio for tester1'),
-('tester2', 'tester2@example.com', 'hashedpassword2', 'Bio for tester2'),
-('testuser', 'testuser@example.com', 'hashedpassword123', 'Test user for login functionality');
+('tester1', 'tester1@example.com', '$2b$10$P8RGLvOVHajIKK8osTL3ueAivFP482vpPJfzwen1RypR2N3WPmAaO', 'Bio for tester1'),
 
 -- Sample Games
 INSERT INTO games (title, description, author_id, game_content, is_published)
