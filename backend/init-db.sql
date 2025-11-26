@@ -85,6 +85,7 @@ CREATE TABLE comments (
 INSERT INTO users (username, email, password, profile_bio)
 VALUES 
 ('tester1', 'tester1@example.com', '$2b$10$P8RGLvOVHajIKK8osTL3ueAivFP482vpPJfzwen1RypR2N3WPmAaO', 'Bio for tester1'),
+('test', 'test@test.test', 'test', 'Test bio');
 
 -- Sample Games
 INSERT INTO games (title, description, author_id, game_content, is_published)
