@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import {useEffect, useState} from 'react';
+import {useParams, useRouter} from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/lib/AuthContext';
-import { gamesApi, likesApi, commentsApi } from '@/lib/api';
+import {useAuth} from '@/lib/AuthContext';
+import {commentsApi, gamesApi, likesApi} from '@/lib/api';
 
 export default function GameDetailsPage() {
   const params = useParams();
@@ -38,7 +38,7 @@ export default function GameDetailsPage() {
       }
     } catch (err) {
       console.error('Failed to load game:', err);
-      alert('Failed to load game details');
+      // alert('Failed to load game details');
     } finally {
       setLoading(false);
     }
@@ -113,7 +113,7 @@ export default function GameDetailsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-foreground/60">Loading...</p>
+        <p className="text-foreground/60 font-mono">Fetching game details...</p>
       </div>
     );
   }
@@ -121,9 +121,9 @@ export default function GameDetailsPage() {
   if (!game) {
     return (
       <div className="text-center py-12">
-        <p className="text-foreground/60">Game not found</p>
-        <Link href="/marketplace" className="text-blue-500 hover:underline mt-4 inline-block">
-          Back to Marketplace
+        <p className="text-foreground/60">404: Game not found! <span style={{whiteSpace: "nowrap"}}>(ノ ゜Д゜)ノ ︵ ┻━┻</span></p>
+        <Link href="/marketplace" className="text-red-500 hover:underline hover:text-red-700 mt-4 inline-block">
+          Go Back
         </Link>
       </div>
     );
@@ -134,11 +134,14 @@ export default function GameDetailsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Game Header */}
-      <div className="bg-foreground/5 rounded-lg p-6 border border-foreground/10">
+      <div className="bg-background rounded-lg px-12 py-10 border border-foreground/10">
+          <span className="text-sm font-mono text-foreground/50">
+            Edited {new Date(game.create_date).toLocaleDateString()} {/* TODO: fetch edit date, fix.*/}
+          </span>
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">{game.title}</h1>
-            <p className="text-foreground/60">by {game.author_name}</p>
+            <h1 className="text-4xl font-black text-red-500 pt-0">{game.title}</h1>
+            <p className="text-foreground text-sm font-mono mt-[-.7rem]">by {game.author_name}</p>
           </div>
           {isAuthor && (
             <Link
@@ -151,7 +154,7 @@ export default function GameDetailsPage() {
         </div>
 
         {game.description && (
-          <p className="text-foreground/80 mt-4">{game.description}</p>
+          <p className="text-foreground my-8 font-mono">{game.description}</p>
         )}
 
         <div className="flex items-center gap-6 mt-6 text-foreground/60">
@@ -174,15 +177,12 @@ export default function GameDetailsPage() {
             </svg>
             <span className="font-medium">{game.plays_count || 0} plays</span>
           </span>
-          <span className="text-sm">
-            Created {new Date(game.create_date).toLocaleDateString()}
-          </span>
         </div>
 
         <div className="mt-6">
           <Link
             href={`/play/${game.game_id}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-md font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-700 rounded-md font-medium text-background"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -195,7 +195,7 @@ export default function GameDetailsPage() {
 
       {/* Comments Section */}
       <div className="bg-foreground/5 rounded-lg p-6 border border-foreground/10">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-black mb-6">
           Comments ({comments.length})
         </h2>
 
@@ -224,10 +224,10 @@ export default function GameDetailsPage() {
             </div>
           </form>
         ) : (
-          <div className="mb-6 p-4 bg-foreground/5 rounded-md text-center">
-            <p className="text-foreground/60">
-              <Link href="/login" className="text-blue-500 hover:underline">Log in</Link>
-              {' '}to leave a comment
+          <div className="mb-6 p-4 bg-foreground rounded-md text-center">
+            <p className="text-background font-mono">
+              <Link href="/login" className="text-red-500 hover:underline hover:text-red-700">Log in</Link>
+                {' '}to leave a comment <span style={{whiteSpace: "nowrap"}}>⊂(◉‿◉)つ</span>.
             </p>
           </div>
         )}
@@ -242,16 +242,14 @@ export default function GameDetailsPage() {
             comments.map(comment => (
               <div
                 key={comment.comment_id}
-                className="p-4 bg-background rounded-md border border-foreground/10"
+                className="p-8 bg-background rounded-md border border-foreground/10"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <span className="font-medium">{comment.author_name}</span>
-                    <span className="text-sm text-foreground/60 ml-2">
+                <div className="flex space-between mb-2">
+                    <span className="font-black text-red-500 text-lg">{comment.author_name}</span>
+                    <span className="text-foreground/50 font-mono ml-auto">
                       {new Date(comment.date_posted).toLocaleDateString()}
                       {comment.is_edited && ' (edited)'}
                     </span>
-                  </div>
                   {user?.userId === comment.user_id && (
                     <div className="flex gap-2">
                       <button
@@ -301,7 +299,7 @@ export default function GameDetailsPage() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-foreground/80 whitespace-pre-wrap">
+                  <p className="text-foreground whitespace-pre-wrap font-mono mt-5">
                     {comment.content}
                   </p>
                 )}

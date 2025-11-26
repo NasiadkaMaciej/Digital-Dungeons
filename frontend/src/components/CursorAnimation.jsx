@@ -3,23 +3,27 @@
 import {useEffect, useRef} from "react";
 
 export default function CursorAnimation() {
-    const cursor = useRef("cursor");
+    const cursorRef = useRef(null);
 
     useEffect(() => {
+        const el = cursorRef.current;
+        if (!el) return;
 
         const animation = setInterval(() => {
-            cursor.current.classList.toggle("bg-foreground");
-            cursor.current.classList.toggle("text-background");
-            cursor.current.classList.toggle("text-foreground");
-            cursor.current.classList.toggle("bg-transparent");
+            if (!cursorRef.current) return;
+
+            cursorRef.current.classList.toggle("bg-foreground");
+            cursorRef.current.classList.toggle("text-background");
+            cursorRef.current.classList.toggle("text-foreground");
+            cursorRef.current.classList.toggle("bg-transparent");
         }, 600);
 
         return () => {
-            clearInterval(animation);
+            window.clearInterval(animation);
         }
     }, [])
 
     return (
-        <mark id={"hero-cursor-animation"} ref={cursor} className={"bg-foreground text-background"}>.</mark>
+        <mark id={"hero-cursor-animation"} ref={cursorRef} className={"bg-foreground text-background"}>.</mark>
     )
 }
