@@ -96,7 +96,7 @@ export default function MarketplacePage() {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-5xl font-black">Marketplace</h1>
-                    <p className="text-foreground/60 mt-3 mb-5 font-mono">
+                    <p className="text-foreground/60 mb-8 font-mono">
                         of all the worlds created by our growing community of nerds{' '}
                         <span style={{ whiteSpace: 'nowrap' }}>(⌐⊙_⊙)</span>.
                     </p>
@@ -134,8 +134,12 @@ export default function MarketplacePage() {
                                 <div className="flex items-center justify-between text-sm text-foreground/60 w-full">
                                     <div className="flex gap-4">
                                         <button
-                                            onClick={() => handleLike(game.game_id)}
-                                            className={`flex items-center gap-1 transition-colors ${
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleLike(game.game_id);
+                                            }}
+                                            className={`flex items-center gap-1 cursor-pointer ${
                                                 likedGames.has(game.game_id)
                                                     ? 'text-red-500'
                                                     : 'hover:text-foreground'

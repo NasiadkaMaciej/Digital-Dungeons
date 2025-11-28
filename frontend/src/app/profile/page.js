@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/lib/AuthContext';
-import { usersApi, gamesApi } from '@/lib/api';
+import {useAuth} from '@/lib/AuthContext';
+import {gamesApi, usersApi} from '@/lib/api';
 import EditProfileModal from '@/components/EditProfileModal';
+import {redirect} from "next/navigation";
 
 export default function ProfilePage() {
   const { user, loading, isAuthenticated } = useAuth();
@@ -31,7 +32,7 @@ export default function ProfilePage() {
     };
 
     window.addEventListener('focus', handleFocus);
-    
+
     // Also reload when page becomes visible (tab switching)
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && displayUser?.userId) {
@@ -63,7 +64,7 @@ export default function ProfilePage() {
 
   const handleDeleteGame = async (gameId) => {
     if (!confirm('Are you sure you want to delete this game?')) return;
-    
+
     try {
       await gamesApi.deleteGame(gameId);
       setUserGames(userGames.filter(g => g.game_id !== gameId));
@@ -75,8 +76,8 @@ export default function ProfilePage() {
   const handleTogglePublish = async (gameId, currentStatus) => {
     try {
       await gamesApi.updateGame(gameId, { isPublished: !currentStatus });
-      setUserGames(userGames.map(g => 
-        g.game_id === gameId 
+      setUserGames(userGames.map(g =>
+        g.game_id === gameId
           ? { ...g, is_published: !currentStatus }
           : g
       ));
@@ -88,55 +89,40 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-foreground/60">Loading...</p>
+        <p className="text-foreground/60 font-mono">Loading...</p>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-6">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold">Profile</h1>
-          <p className="text-foreground/60 max-w-md">
-            You need to be logged in to view your profile
-          </p>
-        </div>
-        <div className="flex gap-4">
-          <Link
-            href="/login"
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-md font-medium transition-colors"
-          >
-            Login
-          </Link>
-          <Link
-            href="/register"
-            className="px-6 py-3 bg-foreground/10 hover:bg-foreground/20 rounded-md font-medium transition-colors"
-          >
-            Register
-          </Link>
-        </div>
-      </div>
-    );
+      redirect("/login");
   }
 
   return (
     <>
-      <div className="space-y-6">
-        <div className="flex justify-between items-start">
-          <h1 className="text-3xl font-bold">Profile</h1>
-          <button
-            onClick={() => setIsEditModalOpen(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md font-medium transition-colors"
-          >
-            Edit Profile
-          </button>
+      <div className="space-y-12">
+        <div className="flex justify-between items-center">
+          <h1 className="text-5xl font-black">Profile</h1>
+            <div>
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="px-5 py-3 bg-background border-1 border-foreground/20 text-sm hover:border-red-500 text-foreground rounded-md cursor-pointer font-medium"
+              >
+                  Edit
+              </button>
+                <button
+                    onClick={() => {/* TODO logout */} }
+                    className="px-5 py-3 ml-3 bg-red-500 text-sm hover:bg-red-700 text-background rounded-md cursor-pointer font-medium"
+                >
+                    Logout
+                </button>
+            </div>
         </div>
-        
-        <div className="bg-foreground/5 rounded-lg p-6 space-y-4">
+
+        <div className="bg-background border-1 border-red-500 rounded-lg px-12 py-10 space-y-10">
           <div>
-            <h2 className="text-xl font-semibold mb-4">Account Information</h2>
-            <div className="space-y-2">
+            <h2 className="text-3xl font-black mb-4 text-foreground">Account Information</h2>
+            <div className="space-y-2 font-mono text-sm">
               <div>
                 <span className="text-foreground/60">Username:</span>{' '}
                 <span className="font-medium">{displayUser.username}</span>
@@ -155,21 +141,22 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="bg-foreground/5 rounded-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">My Games</h2>
-            <Link
-              href="/editor"
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md font-medium transition-colors text-sm"
-            >
-              + New Game
-            </Link>
+        <div className="px-12 py-10 bg-background rounded-lg border-1 border-red-500">
+          <div className="flex justify-between items-center mb-10">
+            <h2 className="text-3xl font-black">My Games</h2>
+              <Link
+                  href="/editor"
+                  className="flex items-center justify-center bg-red-500 hover:bg-red-700 text-background rounded-md font-medium text-xl w-14 aspect-square"
+              >
+                  +
+              </Link>
           </div>
-          
+
           {loadingGames ? (
             <p className="text-foreground/60">Loading games...</p>
           ) : userGames.length === 0 ? (
-            <p className="text-foreground/60">No games yet. Start creating in the Editor!</p>
+            <p className="text-foreground/60 font-mono text-sm text-center pt-5 pb-10"><Link href={"/editor"} className={"text-red-500" +
+                " hover:underline hover:text-red-700"}>Create</Link> your first game.</p>
           ) : (
             <div className="space-y-3">
               {userGames.map(game => (

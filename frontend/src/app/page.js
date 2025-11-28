@@ -21,7 +21,7 @@ export default function Home() {
           </Link>
           <Link
             href="/marketplace"
-            className="inline-flex items-center justify-center rounded-md border border-foreground/20 px-5 py-3 text-sm font-medium bg-background hover:underline"
+            className="inline-flex items-center justify-center rounded-md border border-foreground/20 px-5 py-3 text-sm font-medium bg-background hover:border-red-500"
           >
             Browse games
           </Link>
@@ -30,7 +30,7 @@ export default function Home() {
 
       {/* Features */}
       <section className="my-30">
-        <h2 className="text-4xl font-black">Key Features</h2>
+        <h2 className="text-5xl font-black">Key Features</h2>
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <FeatureCard title="Editor" desc="Visual map and dialogue editor featuring interconnected rooms, custom items, and lively NPCs <span style='white-space: nowrap'>[¬º-°]¬</span>." />
           <FeatureCard title="Gameplay" desc="Distraction-free console-like view allowing imagination to thrive. Engage in games through interactive choices in a grid-based dungeon system <span style='white-space: nowrap'>\( ﾟヮﾟ)/</span>." />
@@ -41,7 +41,7 @@ export default function Home() {
 
       {/* About/Team */}
       <section>
-        <h2 className="text-4xl font-black">About the project</h2>
+        <h2 className="text-5xl font-black">About the project</h2>
         <p className="mt-5 text-foreground/80 max-w-[70ch] font-mono">
             Fascinated by the charm of classics like Pong, and absorbed by the simplistic magic of in-person RPGs, we're working to bring you a sandbox to share your rich inner landscape with the world <span style={{whiteSpace: "nowrap"}}>=^_^=</span>.
         </p>
@@ -62,8 +62,8 @@ export default function Home() {
 
 function FeatureCard({ title, desc }) {
   return (
-    <div className="rounded-lg border border-foreground/10 p-5 bg-background">
-      <h3 className="font-black font-mono text-lg mb-5">{title}</h3>
+    <div className="rounded-lg border border-foreground/20 px-10 py-8 bg-background">
+      <h3 className="font-black font-mono text-xl mb-4">{title}</h3>
       <p className="mt-2 text-sm text-foreground/70 font-mono" dangerouslySetInnerHTML={{ __html: desc }}></p>
     </div>
   );

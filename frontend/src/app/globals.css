@@ -51,5 +51,5 @@ canvas {
 }
 
 ::selection {
-    @apply bg-red-500/30
+    @apply bg-red-500/25
 }

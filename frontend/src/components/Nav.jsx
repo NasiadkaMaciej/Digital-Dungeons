@@ -81,20 +81,7 @@ export default function Nav({
                     );
                 })}
 
-            {isAuthenticated ? (
-                <div className={authContainerClasses}>
-                    <span className="text-sm text-gray-400">{user?.username}</span>
-                    <button
-                        onClick={() => {
-                            logout();
-                            if (onNavigate) onNavigate();
-                        }}
-                        className={`text-sm px-3 py-2 rounded-md hover:bg-red-500/10 text-red-500 border border-transparent hover:border-red-500/20 flex items-center gap-1 ${buttonExtraForVertical}`}
-                    >
-                        Logout
-                    </button>
-                </div>
-            ) : (
+            {!isAuthenticated && (
                 <>
                     <Link
                         href="/login"

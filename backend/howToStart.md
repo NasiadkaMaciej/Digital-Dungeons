@@ -38,6 +38,12 @@ cd backend
 mysql -u ddungeons -p digital_dungeons < init-db.sql
 ```
 
+lub dla Windows:
+
+```bash
+Get-Content .\init-db.sql | mysql -u ddungeons -p digital_dungeons
+```
+
 Wpisz hasło: `your_secure_password`
 
 ### 5. Startowanie backendu
