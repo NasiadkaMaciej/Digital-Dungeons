@@ -8,7 +8,7 @@ import EditProfileModal from '@/components/EditProfileModal';
 import {redirect} from "next/navigation";
 
 export default function ProfilePage() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [localUser, setLocalUser] = useState(null);
   const [userGames, setUserGames] = useState([]);
@@ -111,7 +111,11 @@ export default function ProfilePage() {
                   Edit
               </button>
                 <button
-                    onClick={() => {/* TODO logout */} }
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      window.location.href = "/";
+                    }}
                     className="px-5 py-3 ml-3 bg-red-500 text-sm hover:bg-red-700 text-background rounded-md cursor-pointer font-medium"
                 >
                     Logout
