@@ -200,13 +200,28 @@
         if (m == null) return undefined;
         const out = {};
         if ('hasChest' in m) out.hasChest = !!m.hasChest;
-        if ('entity' in m && m.entity != null) {
-            const et = m.entity.type;
-            if (et !== 'monster' && et !== 'boss' && et !== 'person') {
-                throw new TypeError('meta.entity.type must be "monster" | "boss" | "person"');
+        if ('description' in m) out.description = String(m.description ?? '');
+        if ('isStart' in m) out.isStart = !!m.isStart; // starting room flag
+        if ('conversationRepeatable' in m) out.conversationRepeatable = !!m.conversationRepeatable; // allow replay/shop reuse
+
+        // Support both single entity (old) and entities array (new)
+        // Entities are now stored as array of entity IDs (strings)
+        if ('entities' in m && Array.isArray(m.entities)) {
+            out.entities = m.entities.map(e => {
+                // New format: just IDs
+                if (typeof e === 'string') return e;
+                // Old format: objects with type - migrate to ID if present
+                if (e && typeof e === 'object' && e.id) return String(e.id);
+                return null;
+            }).filter(Boolean);
+            if (out.entities.length === 0) delete out.entities;
+        } else if ('entity' in m && m.entity != null) {
+            // Migrate old single entity format
+            if (m.entity.id) {
+                out.entities = [String(m.entity.id)];
             }
-            out.entity = { type: et, ...(m.entity.id ? { id: String(m.entity.id) } : {}) };
         }
+
         if ('conversationId' in m) out.conversationId = (m.conversationId == null ? null : String(m.conversationId));
         if ('notes' in m) out.notes = String(m.notes);
         return Object.keys(out).length ? out : undefined;
@@ -217,7 +232,37 @@
         if (typeof s !== 'object') throw new TypeError('EditorState must be an object or null.');
         const rooms = Array.isArray(s.rooms) ? s.rooms.map(normaliseRoom) : [];
         const selected = ('selected' in s) ? safeRoomId(s.selected) : null;
-        return { rooms, selected };
+        // Global meta passthrough (shallow) - only simple scalars/strings
+        const globalMetaRaw = s.globalMeta && typeof s.globalMeta === 'object' ? s.globalMeta : {};
+        const globalMeta = {};
+        if ('gameName' in globalMetaRaw) globalMeta.gameName = String(globalMetaRaw.gameName || '');
+        if ('gameDescription' in globalMetaRaw) globalMeta.gameDescription = String(globalMetaRaw.gameDescription || '');
+        if ('tags' in globalMetaRaw && Array.isArray(globalMetaRaw.tags)) {
+            globalMeta.tags = globalMetaRaw.tags.map(t => String(t)).filter(t => t.length);
+        }
+        if ('entities' in globalMetaRaw && Array.isArray(globalMetaRaw.entities)) {
+            globalMeta.entities = globalMetaRaw.entities.map(e => {
+                if (!e || typeof e !== 'object') return null;
+                const et = e.type;
+                if (et !== 'monster' && et !== 'boss' && et !== 'person') return null;
+                return {
+                    id: String(e.id || ''),
+                    type: et,
+                    name: String(e.name || '')
+                };
+            }).filter(e => e && e.id);
+        }
+        if ('items' in globalMetaRaw && Array.isArray(globalMetaRaw.items)) {
+            globalMeta.items = globalMetaRaw.items.map(i => {
+                if (!i || typeof i !== 'object') return null;
+                return {
+                    id: String(i.id || ''),
+                    name: String(i.name || ''),
+                    description: String(i.description || '')
+                };
+            }).filter(i => i && i.id);
+        }
+        return { rooms, selected, globalMeta };
     }
 
     /** @param {any} v @param {string} name */

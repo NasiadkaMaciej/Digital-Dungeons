@@ -36,6 +36,8 @@ export const sketchFactory = (p) => {
     const rooms = new Map();
     /** Callback: null means no data yet => show central plus. */
     let dataFromCallback = null;
+    // Global metadata (game-level)
+    let globalMeta = { gameName: '', gameDescription: '', tags: [], entities: [], items: [] };
 
     // Interaction
     let isPanning = false;
@@ -60,35 +62,129 @@ export const sketchFactory = (p) => {
             : null;
 
         if (seed && seed.rooms && seed.rooms.length) {
-            for (const r of seed.rooms) spawnRoom(r.gx, r.gy, r.meta); // uses local spawnRoom
+            for (const r of seed.rooms) spawnRoom(r.gx, r.gy, r.meta, { select: false }); // do not auto-select on initial load
             if (seed.selected) {
                 const [sx, sy] = seed.selected.split(',').map(Number);
                 selectOnly(sx, sy);
             }
             dataFromCallback = {}; // mark as "has data"
         }
+        if (seed && seed.globalMeta) {
+            globalMeta = {
+                gameName: seed.globalMeta.gameName || '',
+                gameDescription: seed.globalMeta.gameDescription || '',
+                tags: Array.isArray(seed.globalMeta.tags) ? seed.globalMeta.tags : [],
+                entities: Array.isArray(seed.globalMeta.entities) ? seed.globalMeta.entities : [],
+                items: Array.isArray(seed.globalMeta.items) ? seed.globalMeta.items : []
+            };
+        }
+        // Expose imperative meta update for host UI (sidebar)
+        try {
+            window.__editorSetRoomMeta = (roomId, nextMeta) => {
+                try {
+                    const r = rooms.get(roomId);
+                    if (!r) return false;
+                    const meta = (typeof nextMeta === 'function') ? nextMeta(r.meta || {}) : nextMeta;
+                    r.meta = meta || {};
+                    // Broadcast snapshot so host can reflect changes
+                    const Bridge = (typeof window !== 'undefined') ? window.RPGEditorBridge : undefined;
+                    if (Bridge && Bridge.notifyStateSnapshot) Bridge.notifyStateSnapshot(exportState());
+                    try { p.redraw(); } catch {}
+                    return true;
+                } catch (_) { return false; }
+            };
+            window.__editorSetStartingRoom = (roomId) => {
+                try {
+                    // Clear previous starting flag
+                    for (const r of rooms.values()) {
+                        if (r.meta && r.meta.isStart) delete r.meta.isStart;
+                    }
+                    const target = rooms.get(roomId);
+                    if (target) {
+                        target.meta = { ...(target.meta || {}), isStart: true };
+                    }
+                    const Bridge = (typeof window !== 'undefined') ? window.RPGEditorBridge : undefined;
+                    if (Bridge && Bridge.notifyStateSnapshot) Bridge.notifyStateSnapshot(exportState());
+                    try { p.redraw(); } catch {}
+                    return !!target;
+                } catch (_) { return false; }
+            };
+            window.__editorSetGlobalMeta = (updater) => {
+                try {
+                    const next = (typeof updater === 'function') ? updater(globalMeta) : updater;
+                    if (!next || typeof next !== 'object') return false;
+                    globalMeta = {
+                        gameName: String(next.gameName || ''),
+                        gameDescription: String(next.gameDescription || ''),
+                        tags: Array.isArray(next.tags) ? next.tags.map(t => String(t)).filter(Boolean) : [],
+                        entities: Array.isArray(next.entities) ? next.entities.map(e => ({
+                            id: String(e.id || ''),
+                            type: String(e.type || 'monster'),
+                            name: String(e.name || '')
+                        })).filter(e => e.id) : [],
+                        items: Array.isArray(next.items) ? next.items.map(i => ({
+                            id: String(i.id || ''),
+                            name: String(i.name || ''),
+                            description: String(i.description || '')
+                        })).filter(i => i.id) : []
+                    };
+                    const Bridge = (typeof window !== 'undefined') ? window.RPGEditorBridge : undefined;
+                    if (Bridge && Bridge.notifyStateSnapshot) Bridge.notifyStateSnapshot(exportState());
+                    try { p.redraw(); } catch {}
+                    return true;
+                } catch (_) { return false; }
+            };
+            window.__editorCleanMetadata = () => {
+                try {
+                    // Clear all rooms and gameplay registries (entities, items)
+                    rooms.clear();
+                    dataFromCallback = null;
+                    globalMeta = {
+                        gameName: '',
+                        gameDescription: '',
+                        tags: [],
+                        entities: [],
+                        items: []
+                    };
+                    clearSelection();
+                    const Bridge = (typeof window !== 'undefined') ? window.RPGEditorBridge : undefined;
+                    if (Bridge && Bridge.notifyStateSnapshot) Bridge.notifyStateSnapshot(exportState());
+                    try { p.redraw(); } catch {}
+                    return true;
+                } catch (_) { return false; }
+            };
+            window.__editorResetToInitial = () => {
+                try {
+                    const seed = (typeof window !== 'undefined' && window.RPGEditorBridge && window.RPGEditorBridge.pullInitialData)
+                        ? window.RPGEditorBridge.pullInitialData()
+                        : null;
+                    // Clear existing
+                    rooms.clear();
+                    clearSelection();
+                    dataFromCallback = null;
+                    // Apply seed
+                    if (seed && Array.isArray(seed.rooms)) {
+                        for (const r of seed.rooms) spawnRoom(r.gx, r.gy, r.meta);
+                    }
+                    globalMeta = {
+                        gameName: seed?.globalMeta?.gameName || '',
+                        gameDescription: seed?.globalMeta?.gameDescription || '',
+                        tags: Array.isArray(seed?.globalMeta?.tags) ? seed.globalMeta.tags : [],
+                        entities: Array.isArray(seed?.globalMeta?.entities) ? seed.globalMeta.entities : [],
+                        items: Array.isArray(seed?.globalMeta?.items) ? seed.globalMeta.items : []
+                    };
+                    // Do not auto-select any room
+                    const Bridge = (typeof window !== 'undefined') ? window.RPGEditorBridge : undefined;
+                    if (Bridge && Bridge.notifyStateSnapshot) Bridge.notifyStateSnapshot(exportState());
+                    try { p.redraw(); } catch {}
+                    return true;
+                } catch (_) { return false; }
+            };
+        } catch (_) {}
 
         // Register state puller for Save functionality
         if (typeof window !== 'undefined' && window.RPGEditorBridge && window.RPGEditorBridge.setStatePuller) {
-            window.RPGEditorBridge.setStatePuller(() => {
-                const roomsList = [];
-                for (const [key, room] of rooms.entries()) {
-                    roomsList.push({
-                        id: key,
-                        gx: room.gx,
-                        gy: room.gy,
-                        meta: room.meta || {},
-                    });
-                }
-                let selectedKey = null;
-                for (const [key, room] of rooms.entries()) {
-                    if (room.selected) {
-                        selectedKey = key;
-                        break;
-                    }
-                }
-                return { rooms: roomsList, selected: selectedKey };
-            });
+            window.RPGEditorBridge.setStatePuller(() => exportState());
         }
 
         const c = p.canvas || p._renderer?.elt;
@@ -470,7 +566,11 @@ export const sketchFactory = (p) => {
         isPanning = false;
     };
 
-    p.mousePressed = () => {
+    p.mousePressed = (e) => {
+        // Only process clicks that actually occurred on the canvas
+        const canvas = p.canvas || p._renderer?.elt;
+        if (canvas && e && e.target !== canvas) return;
+
         if (inputsLocked()) return;
         // If camera is locked, only allow central plus click-through
         if (isCameraLocked()) {
@@ -541,7 +641,8 @@ export const sketchFactory = (p) => {
     };
 
     // ----- Rooms API -----
-    function spawnRoom(gx, gy, meta) {
+    function spawnRoom(gx, gy, meta, opts) {
+        const options = Object.assign({ select: true }, opts);
         const k = roomKey(gx, gy);
         if (!rooms.has(k)) {
             rooms.set(k, {
@@ -559,12 +660,19 @@ export const sketchFactory = (p) => {
         if (hasRoom(nb.W.gx, nb.W.gy)) reconcileNeighbors(nb.W.gx, nb.W.gy);
         if (hasRoom(nb.E.gx, nb.E.gy)) reconcileNeighbors(nb.E.gx, nb.E.gy);
 
-        selectOnly(gx, gy);
-
-        // Bridge notify (guarded)
+        // Bridge notify (guarded) — send snapshot first so UI has rooms
         const Bridge = (typeof window !== 'undefined') ? window.RPGEditorBridge : undefined;
         if (Bridge && Bridge.notifyRoomAdded) {
             Bridge.notifyRoomAdded({ id: k, gx, gy }, exportState());
+        }
+
+        // Select the newly created room only when requested (user actions)
+        if (options.select) {
+            selectOnly(gx, gy);
+        } else {
+            // when not selecting, still broadcast snapshot so UI stays in sync
+            const state = exportState();
+            if (Bridge && Bridge.notifyStateSnapshot) Bridge.notifyStateSnapshot(state);
         }
     }
 
@@ -622,9 +730,18 @@ export const sketchFactory = (p) => {
             ix += ICON + GAP;
         }
 
-        // Entity (M/B/P)
-        if (room.meta.entity && room.meta.entity.type) {
-            const t = room.meta.entity.type;
+        // Entity (M/B/P) - entities are now stored as IDs; resolve from globalMeta
+        const entityIdsToRender = [];
+        if (room.meta.entities && Array.isArray(room.meta.entities)) {
+            entityIdsToRender.push(...room.meta.entities);
+        }
+
+        for (const entityId of entityIdsToRender) {
+            // Resolve entity from global registry
+            const entity = globalMeta.entities.find(e => e.id === entityId);
+            if (!entity) continue; // Skip if entity not found in registry
+            
+            const t = entity.type;
             const letter = t === 'monster' ? 'M' : (t === 'boss' ? 'B' : 'P');
 
             const cx = ix + ICON / 2;
@@ -714,6 +831,12 @@ export const sketchFactory = (p) => {
 
     function clearSelection() {
         for (const r of rooms.values()) r.selected = false;
+        const Bridge = (typeof window !== 'undefined') ? window.RPGEditorBridge : undefined;
+        if (Bridge) {
+            const state = exportState();
+            if (Bridge.notifySelectionChange) Bridge.notifySelectionChange(null, state);
+            if (Bridge.notifyStateSnapshot) Bridge.notifyStateSnapshot(state);
+        }
     }
 
     // ----- Cursor -----
@@ -748,7 +871,7 @@ export const sketchFactory = (p) => {
             for (const r of rooms.values()) if (r.selected) return roomKey(r.gx, r.gy);
             return null;
         })();
-        return { rooms: out, selected };
+        return { rooms: out, selected, globalMeta };
     }
 
     // Cleanup (React unmount / manual remove)

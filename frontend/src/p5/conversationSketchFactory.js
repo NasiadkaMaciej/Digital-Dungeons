@@ -339,6 +339,54 @@ export const conversationSketchFactory = (p) => {
 
     p.mouseReleased = () => { /* panning stopped by pointerup */ };
 
+    // Keyboard input: edit label of selected node
+    p.keyTyped = () => {
+        if (inputsLocked()) return;
+        // printable characters only; ignore when no node selected
+        const sel = getSelectedNode();
+        if (!sel) return;
+        const ch = p.key;
+        if (typeof ch !== 'string' || ch.length !== 1) return;
+        // Basic filter: avoid control chars
+        if (ch < ' ' ) return;
+        sel.meta = sel.meta || {};
+        const prev = sel.meta.label || '';
+        sel.meta.label = prev + ch;
+        window.ConversationEditorBridge?.notifyStateSnapshot?.(exportState());
+        try { p.redraw(); } catch {}
+    };
+
+    p.keyPressed = (e) => {
+        if (inputsLocked()) return;
+        const sel = getSelectedNode();
+        if (!sel) return;
+        const k = e?.key || p.key;
+        if (k === 'Backspace') {
+            e.preventDefault();
+            sel.meta = sel.meta || {};
+            const prev = sel.meta.label || '';
+            sel.meta.label = prev.slice(0, -1);
+            window.ConversationEditorBridge?.notifyStateSnapshot?.(exportState());
+            try { p.redraw(); } catch {}
+        } else if (k === 'Enter') {
+            e.preventDefault();
+            // For now, treat Enter as newline insert
+            sel.meta = sel.meta || {};
+            const prev = sel.meta.label || '';
+            sel.meta.label = prev + '\n';
+            window.ConversationEditorBridge?.notifyStateSnapshot?.(exportState());
+            try { p.redraw(); } catch {}
+        } else if (k === ' ') {
+            // Allow space via keyPressed to avoid default page scroll
+            e.preventDefault();
+            sel.meta = sel.meta || {};
+            const prev = sel.meta.label || '';
+            sel.meta.label = prev + ' ';
+            window.ConversationEditorBridge?.notifyStateSnapshot?.(exportState());
+            try { p.redraw(); } catch {}
+        }
+    };
+
     // teardown
     const origRemove = p.remove;
     p.remove = function () {
@@ -617,6 +665,11 @@ export const conversationSketchFactory = (p) => {
     }
     function clearSelection(){ for (const n of nodes.values()) n.selected=false; }
 
+    function getSelectedNode(){
+        for (const n of nodes.values()) if (n.selected) return n;
+        return null;
+    }
+
     function loadFromState(state) {
         // Clear current graph
         nodes.clear(); children.clear(); parentOf.clear();
@@ -666,4 +719,6 @@ export const conversationSketchFactory = (p) => {
         const selected = (() => { for (const n of nodes.values()) if (n.selected) return key(n.gx,n.gy); return null; })();
         return { nodes: out, selected };
     }
+    // Expose export for host save operations (safe overwrite each mount)
+    try { if (typeof window !== 'undefined') window.__conversationExportState = exportState; } catch {}
 };

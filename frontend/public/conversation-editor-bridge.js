@@ -40,6 +40,9 @@
     // lightweight event channels the editor subscribes to
     const visibilityListeners = new Set();   // (visible:boolean) => void
     const loadStateListeners  = new Set();   // (state: EditorState) => void
+    
+    // UI control handlers (registered by ConversationCanvas)
+    let uiHandlers = { setVisible: null, replaceState: null };
 
     function validFnOrNull(f){ return typeof f === 'function' ? f : null; }
     function safeId(id){
@@ -116,24 +119,46 @@
     }
 
     // -------- Host controls (UI -> editor) --------
+    /** 
+     * Register UI control handlers from ConversationCanvas.
+     * Expected: { setVisible: (visible:boolean|null) => void, replaceState: (state) => void }
+     */
+    function bindUI(h) {
+        if (h && typeof h === 'object') {
+            if (typeof h.setVisible === 'function') uiHandlers.setVisible = h.setVisible;
+            if (typeof h.replaceState === 'function') uiHandlers.replaceState = h.replaceState;
+        }
+    }
+    
     /** Show or hide the overlay without remounting. */
     function setVisibility(visible) {
-            for (const cb of visibilityListeners) {
-                try { cb(!!visible); } catch (e) { /* noop */ }
-            }
+        if (uiHandlers.setVisible) {
+            try { uiHandlers.setVisible(!!visible); } catch (e) { console.warn('[Bridge] setVisible threw:', e); }
         }
+        // legacy listener support
+        for (const cb of visibilityListeners) {
+            try { cb(!!visible); } catch (e) { /* noop */ }
+        }
+    }
     /** Convenience toggle. */
     function toggleVisibility() {
+        if (uiHandlers.setVisible) {
+            try { uiHandlers.setVisible(null); } catch (e) { console.warn('[Bridge] setVisible threw:', e); }
+        }
         for (const cb of visibilityListeners) {
             try { cb('toggle'); } catch (e) { /* noop */ }
         }
     }
     /**
-     * Push a full editor state (for a specific room’s conversation) into the running sketch.
+     * Push a full editor state (for a specific room's conversation) into the running sketch.
      * The sketch will replace its state without re-mounting.
      */
     function loadState(state) {
         const norm = normaliseState(state);
+        if (uiHandlers.replaceState) {
+            try { uiHandlers.replaceState(norm); } catch (e) { console.warn('[Bridge] replaceState threw:', e); }
+        }
+        // legacy listener support
         for (const cb of loadStateListeners) {
             try { cb(norm); } catch (e) { /* noop */ }
         }
@@ -160,6 +185,7 @@
         notifyNodeAdded,
         notifyNodeDeleted,
         notifyStateSnapshot,
+        bindUI,
         setVisibility,
         toggleVisibility,
         loadState,

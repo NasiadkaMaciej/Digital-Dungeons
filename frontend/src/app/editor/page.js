@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import RPGEditorCanvas from '@/components/RPGEditorCanvas.jsx';
-import EditorToolbar from '@/components/EditorToolbar';
+// EditorToolbar removed; actions migrated into EditorSidebar
 import BridgeProvider from "@/providers/BridgeProvider";
 import NoScroll from "@/providers/NoScroll";
 import ConversationCanvas from "@/components/ConversationCanvas";
 import ConversationBridgeProvider from "@/providers/ConversationBridgeProvider";
+import EditorSidebar from "@/components/EditorSidebar";
 import { gamesApi } from '@/lib/api';
 
 export default function EditorPage() {
@@ -16,6 +17,7 @@ export default function EditorPage() {
     const [currentGameId, setCurrentGameId] = useState(null);
     const [gameData, setGameData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [convEditorActive, setConvEditorActive] = useState(false);
 
     useEffect(() => {
         const gameId = searchParams.get('gameId');
@@ -88,7 +90,10 @@ export default function EditorPage() {
         if (confirm('Start a new game? Unsaved changes will be lost.')) {
             setCurrentGameId(null);
             setGameData(null);
-            router.push('/editor');
+            // Reset the canvas to initial sample data immediately without navigation
+            try { window.__editorResetToInitial?.(); } catch {}
+            // Optionally refresh route to clear any query params
+            router.replace('/editor');
         }
     };
 
@@ -104,15 +109,14 @@ export default function EditorPage() {
         <BridgeProvider initialData={gameData}>
             <ConversationBridgeProvider>
                 <NoScroll>
-                    <EditorToolbar
-                        onSave={handleSave}
-                        onLoad={handleLoad}
-                        onNew={handleNew}
-                    />
-                    {/* Base map editor */}
-                    <RPGEditorCanvas />
-                    {/* Conversations overlay ( DEBUG toggle with "C") */}
-                    <ConversationCanvas />
+
+                    {/* Keep map & sidebar mounted to preserve state; just hide visually */}
+                    <div style={{ display: convEditorActive ? 'none' : 'block' }}>
+                        <RPGEditorCanvas />
+                        <EditorSidebar onSave={handleSave} onLoad={handleLoad} onNew={handleNew} currentGameId={currentGameId} />
+                    </div>
+                    {/* Conversations overlay */}
+                    <ConversationCanvas onActiveChange={setConvEditorActive} />
                 </NoScroll>
             </ConversationBridgeProvider>
         </BridgeProvider>

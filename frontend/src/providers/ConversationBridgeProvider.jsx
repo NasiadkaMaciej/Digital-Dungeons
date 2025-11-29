@@ -21,10 +21,22 @@ export default function ConversationBridgeProvider({ children }) {
                         ],
                         selected: '0,0',
                     }),
-                    onSelectionChange: (id, state) => console.log('[Conv] selection:', id, state),
-                    onNodeAdded: (node, state)     => console.log('[Conv] added:', node, state),
-                    onNodeDeleted: (id, state)     => console.log('[Conv] deleted:', id, state),
-                    onStateSnapshot: (state)       => console.log('[Conv] snapshot:', state),
+                    onSelectionChange: (id, state) => {
+                        console.log('[Conv] selection:', id, state);
+                        window.dispatchEvent(new CustomEvent('conversation-editor-selection', { detail: { id, state } }));
+                    },
+                    onNodeAdded: (node, state) => {
+                        console.log('[Conv] added:', node, state);
+                        window.dispatchEvent(new CustomEvent('conversation-editor-state', { detail: { state } }));
+                    },
+                    onNodeDeleted: (id, state) => {
+                        console.log('[Conv] deleted:', id, state);
+                        window.dispatchEvent(new CustomEvent('conversation-editor-state', { detail: { state } }));
+                    },
+                    onStateSnapshot: (state) => {
+                        console.log('[Conv] snapshot:', state);
+                        window.dispatchEvent(new CustomEvent('conversation-editor-state', { detail: { state } }));
+                    },
                 });
             } catch (e) {
                 console.warn('Failed to ensure ConversationEditorBridge:', e);

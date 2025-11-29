@@ -90,8 +90,116 @@ VALUES
 -- Sample Games
 INSERT INTO games (title, description, author_id, game_content, is_published)
 VALUES
-('Dungeon of Doom', 'Classic dungeon crawler.', 1, '{"rooms":[], "meta":{}}', TRUE),
-('Forest Quest', 'Adventure in the enchanted forest.', 2, '{"rooms":[], "meta":{}}', TRUE);
+('Town Square Tutorial', 'A guided intro showcasing conversations and branching.', 1,
+        '{
+            "rooms": [
+                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Town square with a helpful Guide.","entities":["guide"],"conversationId":"intro_talk","conversationRepeatable":false,
+                    "conversationState": {"nodes": [
+                        {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Welcome to Digital Dungeons!"}},
+                        {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Tell me about movement"}},
+                        {"id":"1,1","gx":1,"gy":1,"parentId":"0,0","meta":{"label":"How do I fight?"}},
+                        {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Use WASD/Arrows to move."}},
+                        {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"Click or press Space to attack."}}
+                    ], "selected": "0,0" } }},
+                {"id":"1,0","gx":1,"gy":0,"meta":{"hasChest":true,"description":"Supply stall with basic loot.","entities":["merchant"],"conversationId":"shop_chat","conversationRepeatable":true,
+                    "conversationState": {"nodes": [
+                        {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Welcome! Want to browse goods?"}},
+                        {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Show me potions"}},
+                        {"id":"1,1","gx":1,"gy":1,"parentId":"0,0","meta":{"label":"Any weapons?"}},
+                        {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"We have Health and Mana potions."}},
+                        {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"A Rusty Sword and a Wooden Bow."}}
+                    ], "selected": "0,0" } }},
+                {"id":"0,1","gx":0,"gy":1,"meta":{"description":"Training dummy area.","entities":["trainer"]}}
+            ],
+            "selected": null,
+            "globalMeta": {
+                "gameName": "Town Square Tutorial",
+                "gameDescription": "A guided intro showcasing conversations and branching.",
+                "tags": ["tutorial","conversations","starter"],
+                "entities": [
+                    {"id":"guide","type":"person","name":"Town Guide"},
+                    {"id":"merchant","type":"person","name":"Market Merchant"},
+                    {"id":"trainer","type":"person","name":"Combat Trainer"}
+                ],
+                "items": [
+                    {"id":"health_potion","name":"Health Potion","description":"Restores 50 HP"},
+                    {"id":"rusty_sword","name":"Rusty Sword","description":"A basic melee weapon"},
+                    {"id":"gold_coin","name":"Gold Coin","description":"Currency for trading"}
+                ]
+            }
+        }', TRUE),
+('Goblin Caves', 'Explore winding caves inhabited by goblins.', 2,
+        '{
+            "rooms": [
+                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Cave entrance","entities":["scout"]}},
+                {"id":"1,0","gx":1,"gy":0,"meta":{"hasChest":true,"description":"Treasure nook","entities":["scout","goblin_chief"]}},
+                {"id":"1,1","gx":1,"gy":1,"meta":{"conversationId":"chief_dialog","conversationRepeatable":true,"description":"Chief\u2019s den","entities":["goblin_chief"]}}
+            ],
+            "selected": null,
+            "globalMeta": {
+                "gameName": "Goblin Caves",
+                "gameDescription": "Explore winding caves inhabited by goblins.",
+                "tags": ["cave","goblins","loot"],
+                "entities": [
+                    {"id":"scout","type":"monster","name":"Goblin Scout"},
+                    {"id":"goblin_chief","type":"boss","name":"Goblin Chief"}
+                ],
+                "items": [
+                    {"id":"torch","name":"Torch","description":"Lights dark tunnels"},
+                    {"id":"lockpick","name":"Lockpick","description":"Opens simple locks"}
+                ]
+            }
+        }', TRUE),
+('Ruined Keep', 'A larger sample with multiple NPCs and branching quests.', 1,
+        '{
+            "rooms": [
+                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Broken gate into the keep.","entities":["sentry"]}},
+                {"id":"1,0","gx":1,"gy":0,"meta":{"description":"Courtyard littered with debris.","entities":["sentry","villager"]}},
+                {"id":"2,0","gx":2,"gy":0,"meta":{"hasChest":true,"description":"Supply cache under the stairs.","entities":["villager"]}},
+                {"id":"0,1","gx":0,"gy":1,"meta":{"description":"Collapsed library.","entities":["scholar"],"conversationId":"lore_intro","conversationRepeatable":false,
+                    "conversationState": {"nodes": [
+                        {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"These ruins hold ancient secrets."}},
+                        {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Ask about the keep"}},
+                        {"id":"1,1","gx":1,"gy":1,"parentId":"0,0","meta":{"label":"Request a clue"}},
+                        {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Built by the Starfall Order."}},
+                        {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"Seek the crest in the chapel."}}
+                    ], "selected": "0,0" } }},
+                {"id":"1,1","gx":1,"gy":1,"meta":{"description":"Chapel of the fallen crest.","entities":["priest"],"conversationId":"chapel_choice","conversationRepeatable":true,
+                    "conversationState": {"nodes": [
+                        {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"You bear the scholars request?"}},
+                        {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Yes, I seek the crest"}},
+                        {"id":"1,1","gx":1,"gy":1,"parentId":"0,0","meta":{"label":"I need guidance"}},
+                        {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Take this crest fragment."}},
+                        {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"Pray and reflect upon your path."}}
+                    ], "selected": "0,0" } }},
+                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Armory with damaged weapons.","entities":["blacksmith"],"conversationId":"forge_help","conversationRepeatable":true,
+                    "conversationState": {"nodes": [
+                        {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Need something fixed or forged?"}},
+                        {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Repair my sword"}},
+                        {"id":"1,1","gx":1,"gy":1,"parentId":"0,0","meta":{"label":"Forge a new blade"}},
+                        {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Done. It should hold for now."}},
+                        {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"A fine steel saber for you."}}
+                    ], "selected": "0,0" } }}
+            ],
+            "selected": null,
+            "globalMeta": {
+                "gameName": "Ruined Keep",
+                "gameDescription": "A larger sample with multiple NPCs and branching quests.",
+                "tags": ["keep","ruins","quests","conversations"],
+                "entities": [
+                    {"id":"sentry","type":"person","name":"Gate Sentry"},
+                    {"id":"villager","type":"person","name":"Displaced Villager"},
+                    {"id":"scholar","type":"person","name":"Wandering Scholar"},
+                    {"id":"priest","type":"person","name":"Chaplain of the Keep"},
+                    {"id":"blacksmith","type":"person","name":"Keep Blacksmith"}
+                ],
+                "items": [
+                    {"id":"crest_fragment","name":"Crest Fragment","description":"Piece of the chapel crest"},
+                    {"id":"steel_saber","name":"Steel Saber","description":"Reliable newly forged blade"},
+                    {"id":"repair_kit","name":"Repair Kit","description":"Restores durability of equipment"}
+                ]
+            }
+        }', TRUE);
 
 -- Sample Playthroughs
 INSERT INTO playthroughs (game_id, user_id, game_state, status)
