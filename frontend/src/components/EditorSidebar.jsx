@@ -110,6 +110,15 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
             };
             console.log('[EditorSidebar] Request open conversation editor context:', ctx);
             if (window.__setConvRoomContext) window.__setConvRoomContext(ctx);
+            // If we have a persisted state on the room, push it into the editor before showing
+            const persisted = selectedRoom.meta?.conversationState;
+            if (persisted && Array.isArray(persisted.nodes)) {
+                try {
+                    window.ConversationEditorBridge?.replaceState?.(persisted);
+                } catch (e) {
+                    console.warn('[EditorSidebar] Failed to push persisted conversation state:', e);
+                }
+            }
             // Activate via bridge (will trigger loading logic in ConversationCanvas)
             window.ConversationEditorBridge?.setVisibility?.(true);
         } catch (e) {

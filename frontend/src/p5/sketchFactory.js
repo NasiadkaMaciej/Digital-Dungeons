@@ -663,7 +663,7 @@ export const sketchFactory = (p) => {
         // Bridge notify (guarded) — send snapshot first so UI has rooms
         const Bridge = (typeof window !== 'undefined') ? window.RPGEditorBridge : undefined;
         if (Bridge && Bridge.notifyRoomAdded) {
-            Bridge.notifyRoomAdded({ id: k, gx, gy }, exportState());
+            Bridge.notifyRoomAdded({ id: k, gx, gy, meta }, exportState());
         }
 
         // Select the newly created room only when requested (user actions)

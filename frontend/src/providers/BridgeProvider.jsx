@@ -5,6 +5,7 @@ import {ensureBridge} from "@/app/utils/ensureBridge";
 export default function BridgeProvider({ children, initialData = null }) {
     useEffect(() => {
         let cancelled = false;
+        console.log('[BridgeProvider] Mounting/updating with initialData:', initialData);
         (async () => {
             try {
                 await ensureBridge('RPGEditorBridge', '/rpg-editor-bridge.js');
@@ -12,8 +13,12 @@ export default function BridgeProvider({ children, initialData = null }) {
 
                 window.RPGEditorBridge.configure({
                     getInitialData: () => {
+                        console.log('[BridgeProvider] getInitialData called, returning:', initialData);
                         // If we have initialData from props, use it
                         if (initialData) {
+                            console.log('[BridgeProvider] Rooms in initialData:', initialData.rooms);
+                            // Expose for consumers that may need to read before first snapshot propagates
+                            try { window.__initialGameData = initialData; } catch {}
                             // Force no selection on initial load so global metadata shows first
                             return { ...initialData, selected: null };
                         }

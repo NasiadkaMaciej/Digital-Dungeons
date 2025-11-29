@@ -28,6 +28,21 @@ export default function EditorPage() {
         }
     }, [searchParams]);
 
+    // Reset editor canvas when game data changes
+    useEffect(() => {
+        if (gameData && window.__editorResetToInitial) {
+            console.log('[EditorPage] Game data changed, resetting editor with:', gameData);
+            // Small delay to ensure bridge is configured
+            setTimeout(() => {
+                try {
+                    window.__editorResetToInitial();
+                } catch (e) {
+                    console.warn('[EditorPage] Failed to reset editor:', e);
+                }
+            }, 100);
+        }
+    }, [gameData]);
+
     // Force dark theme while on the editor page to avoid light-mode rendering issues
     useEffect(() => {
         try {
@@ -53,8 +68,31 @@ export default function EditorPage() {
     const loadGame = async (gameId) => {
         try {
             const game = await gamesApi.getGameById(gameId);
+            console.log('[EditorPage] Loaded game from API:', game);
             setCurrentGameId(game.game_id);
-            setGameData(game.game_content);
+            // game_content may arrive as a JSON string from the API; parse defensively
+            let content = game.game_content;
+            console.log('[EditorPage] Raw game_content type:', typeof content, 'value:', content);
+            if (typeof content === 'string') {
+                try {
+                    content = JSON.parse(content);
+                    console.log('[EditorPage] Parsed game_content:', content);
+                } catch (e) {
+                    console.warn('[EditorPage] Failed to parse game_content JSON, falling back to empty object:', e);
+                    content = { rooms: [], selected: null, globalMeta: {} };
+                }
+            }
+            // Validate structure
+            if (!content || typeof content !== 'object') {
+                console.warn('[EditorPage] Invalid content structure, resetting:', content);
+                content = { rooms: [], selected: null, globalMeta: {} };
+            }
+            if (!Array.isArray(content.rooms)) {
+                console.warn('[EditorPage] Missing or invalid rooms array, resetting');
+                content.rooms = [];
+            }
+            console.log('[EditorPage] Final content to set:', content);
+            setGameData(content);
         } catch (err) {
             alert('Failed to load game: ' + err.message);
         } finally {
@@ -116,7 +154,7 @@ export default function EditorPage() {
                         <EditorSidebar onSave={handleSave} onLoad={handleLoad} onNew={handleNew} currentGameId={currentGameId} />
                     </div>
                     {/* Conversations overlay */}
-                    <ConversationCanvas onActiveChange={setConvEditorActive} />
+                    <ConversationCanvas onActiveChange={setConvEditorActive} gameId={currentGameId} />
                 </NoScroll>
             </ConversationBridgeProvider>
         </BridgeProvider>

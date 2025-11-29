@@ -6,9 +6,9 @@ const CELL_X_GAP = 70;   // horizontal gutter between columns
 const CELL_Y_GAP = 30;   // vertical gutter between stacked nodes
 const BG = '#0f0f10';
 const NODE_FILL = '#1b1b1d';
-const NODE_STROKE = '#7ec3ff';
+const NODE_STROKE = '#4aa8ff';
 const NODE_SELECTED = '#ffd74a';
-const GRID = '#222';
+const GRID = '#3a3a3a';
 const PLUS_FILL = '#232323';
 const PLUS_STROKE = '#9ee8a8';
 const PLUS_HOVER = '#ffffff';
@@ -17,9 +17,9 @@ const EDGE = 2;
 const DELETE_BADGE_SIZE = 14;
 const DELETE_BADGE_COLOR = '#ff6b6b';
 
-let disposed = false;
-
 export const conversationSketchFactory = (p) => {
+    // disposed must be per-instance; avoid module-level shared state
+    let disposed = false;
     // camera
     let cam = { x: 0, y: 0, z: 1, minZ: 0.4, maxZ: 3 };
 
@@ -52,7 +52,20 @@ export const conversationSketchFactory = (p) => {
     p.setup = () => {
         const cnv = p.createCanvas(p.windowWidth, p.windowHeight);
         cnv.elt.id = 'conversationCanvas';
+        try {
+            cnv.elt.style.position = 'absolute';
+            cnv.elt.style.inset = '0';
+            cnv.elt.style.width = '100%';
+            cnv.elt.style.height = '100%';
+            cnv.elt.style.opacity = '1';
+            cnv.elt.style.display = 'block';
+            cnv.elt.style.zIndex = '10000';
+        } catch {}
         p.pixelDensity(window.devicePixelRatio || 1);
+        // Explicitly enable looping at 60fps
+        p.frameRate(60);
+        p.loop();
+        console.log('[ConvSketch] setup completed, canvas size:', p.width, 'x', p.height, 'looping:', p.isLooping?.() ?? 'unknown');
         centre();
 
         // seed
@@ -100,6 +113,10 @@ export const conversationSketchFactory = (p) => {
             loadFromState(state);
             try { p.redraw(); } catch {}
         };
+        // expose node count for diagnostics
+        p.__getNodeCount = () => nodes.size;
+        // expose centre control for host to recentre camera
+        p.__centre = () => { try { centre(); p.redraw(); } catch {} };
 
         // panning with pointer events
         if (c) {
@@ -145,9 +162,18 @@ export const conversationSketchFactory = (p) => {
     };
 
     p.draw = () => {
-        if (disposed) return;
+        if (disposed) { return; }
+        // Always ensure we're looping (defensive against external noLoop calls or visibility toggles)
+        const isActive = typeof window !== 'undefined' && window.__convActive;
+        const looping = p.isLooping?.();
+        if (isActive && !looping) { try { p.loop(); } catch {} }
+        // Log draw call for first few frames to verify loop is running
+        // (debug draw logging removed)
+        // Defensive: ensure sane blend mode every frame
+        try { p.blendMode(p.BLEND); } catch {}
         if (isLocked()) { centre(); isPanning = false; }
         p.background(BG);
+        // test marker removed
 
         p.push();
         p.translate(cam.x, cam.y); p.scale(cam.z);
@@ -188,13 +214,13 @@ export const conversationSketchFactory = (p) => {
         // nodes
         for (const n of nodes.values()) {
             const rr = rect(n.gx, n.gy);
-            if (!intersect(rr, viewRect)) continue;
+            // do not cull during diagnostics
 
             const kNode = key(n.gx, n.gy);
             const isParent = children.has(kNode) && children.get(kNode)?.size;
             const outline = n.selected ? NODE_SELECTED : (isParent ? colourForParent(kNode) : NODE_STROKE);
             p.stroke(outline);
-            p.strokeWeight(EDGE / cam.z);
+            p.strokeWeight(Math.max(2, EDGE / cam.z));
             p.fill(NODE_FILL);
             p.rect(rr.x, rr.y, rr.w, rr.h, 6 / cam.z);
 
@@ -204,7 +230,7 @@ export const conversationSketchFactory = (p) => {
         // hover highlight
         if (hovered.type === 'node') {
             const rr = rect(hovered.gx, hovered.gy);
-            p.noFill(); p.stroke('#fff'); p.strokeWeight(2 / cam.z);
+            p.noFill(); p.stroke('#fff'); p.strokeWeight(Math.max(2, 2 / cam.z));
             p.rect(rr.x, rr.y, rr.w, rr.h, 6 / cam.z);
         }
 
@@ -252,6 +278,8 @@ export const conversationSketchFactory = (p) => {
 
         // central plus if empty
         if (nodes.size === 0) drawCentralPlus();
+
+        // debug overlay removed
 
         updateCursor();
     };
@@ -707,6 +735,11 @@ export const conversationSketchFactory = (p) => {
         for (const [pk, set] of children.entries()) {
             if (set && set.size) colourForParent(pk);
         }
+
+        // Force draw refresh
+        console.log('[ConvSketch] loadFromState complete, nodes:', nodes.size);
+        try { p.loop(); } catch {}
+        try { p.redraw(); } catch {}
     }
 
     function exportState(){
