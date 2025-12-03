@@ -82,7 +82,7 @@ Interfejs użytkownika Digital Dungeons został zaprojektowany z myślą o prost
 ### Faza 2: Rozszerzenia
 - [x] Marketplace <15.12.25>
 - [x] System ocen i komentarzy <15.12.25>
-- [ ] Wyszukiwarka gier w marketplace i profile <15.12.25>
+- [-] Wyszukiwarka gier w marketplace i profile <15.12.25>
 - [ ] System tagów i kategorii gier <27.12.25>
 - [-] Zaawansowane funkcje edytora (np. konwersacje) <1.01.26>
 - [x] Strona główna z informacjami o projekcie <1.01.26>

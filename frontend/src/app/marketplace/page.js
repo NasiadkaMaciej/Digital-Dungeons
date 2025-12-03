@@ -13,6 +13,7 @@ export default function MarketplacePage() {
 	const [games, setGames] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [likedGames, setLikedGames] = useState(new Set());
+	const [search, setSearch] = useState("");
 
 	useEffect(() => {
 		loadGames();
@@ -91,6 +92,13 @@ export default function MarketplacePage() {
 		);
 	}
 
+	// Filtrowanie gier po tytule i autorze
+	const filteredGames = games.filter(
+		(game) =>
+			game.title.toLowerCase().includes(search.toLowerCase()) ||
+			(game.author_name && game.author_name.toLowerCase().includes(search.toLowerCase()))
+	);
+
 	return (
 		<div className="space-y-6">
 			<div className="flex justify-between items-center">
@@ -103,20 +111,31 @@ export default function MarketplacePage() {
 				</div>
 			</div>
 
-			{games.length === 0 ? (
+			{/* Wyszukiwarka gier */}
+			<div className="mb-6">
+				<input
+					type="text"
+					value={search}
+					onChange={e => setSearch(e.target.value)}
+					placeholder="Search games by title or author..."
+					className="w-full px-4 py-2 border border-foreground/20 rounded-md font-mono text-base bg-background focus:outline-none focus:border-red-500"
+				/>
+			</div>
+
+			{filteredGames.length === 0 ? (
 				<div className="text-center py-12 bg-background border-1 border-foreground/5 rounded-lg font-mono">
 					<p className="text-foreground/60">
-						No published games yet{' '}
+						No games found{' '}
 						<span style={{ whiteSpace: 'nowrap' }}>( ✜︵✜ )</span>.
 					</p>
 				</div>
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{games.map((game) => (
+					{filteredGames.map((game) => (
 						<Link
 							href={`/game/${game.game_id}`}
 							key={game.game_id}
-							className="block cursor-pointer bg-background rounded-lg p-10 border border-foreground/10 hover:border-red-500 transition-all flex flex-col"
+							className="cursor-pointer bg-background rounded-lg p-10 border border-foreground/10 hover:border-red-500 transition-all flex flex-col"
 						>
 							<div className="flex-1">
 								<h3 className="text-2xl font-black text-red-500">{game.title}</h3>
@@ -140,8 +159,8 @@ export default function MarketplacePage() {
 												handleLike(game.game_id);
 											}}
 											className={`flex items-center gap-1 cursor-pointer ${likedGames.has(game.game_id)
-													? 'text-red-500'
-													: 'hover:text-foreground'
+												? 'text-red-500'
+												: 'hover:text-foreground'
 												}`}
 											disabled={!isAuthenticated}
 										>
