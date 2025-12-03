@@ -206,7 +206,7 @@ export default function GameDetailsPage() {
 						</span>
 					</div>
 					<Link
-						href={`/play/${game.game_id}`}
+						href={`/play?id=${game.game_id}`}
 						className="inline-flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-700 rounded-md font-medium text-background"
 					>
 						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
