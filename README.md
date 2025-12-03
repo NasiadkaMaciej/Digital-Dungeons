@@ -134,8 +134,36 @@ Projekt jest rozwijany na potrzeby edukacyjne. Szczegóły licencji będą dodan
 ## API Endpoints
 
 ### User Authentication
-- **POST /api/login**: Authenticate a user with email and password.
-- **POST /api/register**: Register a new user with username, email, and password.
+- `POST /api/login` — logowanie użytkownika (email, hasło)
+- `POST /api/register` — rejestracja nowego użytkownika (username, email, hasło)
 
 ### Games
-- **GET /api/games**: Fetch a list of all published games.
+- `GET /api/games` — pobierz listę wszystkich opublikowanych gier
+- `GET /api/games/:id` — pobierz szczegóły gry
+- `POST /api/games` — utwórz nową grę (wymaga autoryzacji)
+- `PUT /api/games/:id` — edytuj grę (wymaga autoryzacji)
+- `DELETE /api/games/:id` — usuń grę (wymaga autoryzacji)
+
+### Comments
+- `GET /api/comments/game/:gameId` — pobierz komentarze do gry
+- `POST /api/comments/:gameId` — dodaj komentarz do gry
+- `PUT /api/comments/:commentId` — edytuj komentarz
+- `DELETE /api/comments/:commentId` — usuń komentarz
+
+### Likes
+- `POST /api/likes/:gameId` — polub grę
+- `DELETE /api/likes/:gameId` — usuń polubienie
+- `GET /api/likes/user/:userId` — pobierz polubione gry użytkownika
+- `GET /api/likes/check/:gameId` — sprawdź, czy użytkownik polubił grę
+
+### Users
+- `GET /api/users/:userId` — pobierz profil użytkownika
+- `PUT /api/users/profile` — edytuj profil użytkownika
+- `GET /api/users/:userId/games` — pobierz gry utworzone przez użytkownika
+
+### Playthroughs
+- `GET /api/playthroughs/user` — pobierz rozgrywki użytkownika
+- `GET /api/playthroughs/:id` — pobierz szczegóły rozgrywki
+- `POST /api/playthroughs` — rozpocznij nową rozgrywkę
+- `PUT /api/playthroughs/:id` — aktualizuj stan rozgrywki
+- `DELETE /api/playthroughs/:id` — usuń rozgrywkę
