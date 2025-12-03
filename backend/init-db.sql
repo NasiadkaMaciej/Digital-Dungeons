@@ -88,6 +88,7 @@ VALUES
 ('test', 'test@test.test', 'test', 'Test bio');
 
 -- Sample Games
+
 INSERT INTO games (title, description, author_id, game_content, is_published)
 VALUES
 ('Town Square Tutorial', 'A guided intro showcasing conversations and branching.', 1,
@@ -109,7 +110,14 @@ VALUES
                         {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"We have Health and Mana potions."}},
                         {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"A Rusty Sword and a Wooden Bow."}}
                     ], "selected": "0,0" } }},
-                {"id":"0,1","gx":0,"gy":1,"meta":{"description":"Training dummy area.","entities":["trainer"]}}
+                {"id":"0,1","gx":0,"gy":1,"meta":{"description":"Training dummy area.","entities":["trainer"]}},
+                {"id":"1,1","gx":1,"gy":1,"meta":{"description":"Fountain plaza with a mysterious stranger.","entities":["stranger"],"conversationId":"stranger_intro","conversationRepeatable":true,
+                    "conversationState": {"nodes": [
+                        {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Care for a riddle?"}},
+                        {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Yes, tell me!"}},
+                        {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"What walks on four legs in the morning..."}}
+                    ], "selected": "0,0" } }},
+                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Hidden alley with a locked door.","entities":["thief"]}}
             ],
             "selected": null,
             "globalMeta": {
@@ -119,12 +127,15 @@ VALUES
                 "entities": [
                     {"id":"guide","type":"person","name":"Town Guide"},
                     {"id":"merchant","type":"person","name":"Market Merchant"},
-                    {"id":"trainer","type":"person","name":"Combat Trainer"}
+                    {"id":"trainer","type":"person","name":"Combat Trainer"},
+                    {"id":"stranger","type":"person","name":"Mysterious Stranger"},
+                    {"id":"thief","type":"person","name":"Sneaky Thief"}
                 ],
                 "items": [
                     {"id":"health_potion","name":"Health Potion","description":"Restores 50 HP"},
                     {"id":"rusty_sword","name":"Rusty Sword","description":"A basic melee weapon"},
-                    {"id":"gold_coin","name":"Gold Coin","description":"Currency for trading"}
+                    {"id":"gold_coin","name":"Gold Coin","description":"Currency for trading"},
+                    {"id":"silver_key","name":"Silver Key","description":"Opens locked doors"}
                 ]
             }
         }', TRUE),
@@ -133,7 +144,9 @@ VALUES
             "rooms": [
                 {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Cave entrance","entities":["scout"]}},
                 {"id":"1,0","gx":1,"gy":0,"meta":{"hasChest":true,"description":"Treasure nook","entities":["scout","goblin_chief"]}},
-                {"id":"1,1","gx":1,"gy":1,"meta":{"conversationId":"chief_dialog","conversationRepeatable":true,"description":"Chief\u2019s den","entities":["goblin_chief"]}}
+                {"id":"1,1","gx":1,"gy":1,"meta":{"conversationId":"chief_dialog","conversationRepeatable":true,"description":"Chief\u2019s den","entities":["goblin_chief"]}},
+                {"id":"2,0","gx":2,"gy":0,"meta":{"description":"Collapsed tunnel with glowing mushrooms.","entities":["mushroom"]}},
+                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Goblin nursery.","entities":["goblin_child"]}}
             ],
             "selected": null,
             "globalMeta": {
@@ -142,11 +155,14 @@ VALUES
                 "tags": ["cave","goblins","loot"],
                 "entities": [
                     {"id":"scout","type":"monster","name":"Goblin Scout"},
-                    {"id":"goblin_chief","type":"boss","name":"Goblin Chief"}
+                    {"id":"goblin_chief","type":"boss","name":"Goblin Chief"},
+                    {"id":"mushroom","type":"creature","name":"Glowing Mushroom"},
+                    {"id":"goblin_child","type":"monster","name":"Goblin Child"}
                 ],
                 "items": [
                     {"id":"torch","name":"Torch","description":"Lights dark tunnels"},
-                    {"id":"lockpick","name":"Lockpick","description":"Opens simple locks"}
+                    {"id":"lockpick","name":"Lockpick","description":"Opens simple locks"},
+                    {"id":"mushroom_cap","name":"Mushroom Cap","description":"Glows faintly in the dark"}
                 ]
             }
         }', TRUE),
@@ -179,7 +195,9 @@ VALUES
                         {"id":"1,1","gx":1,"gy":1,"parentId":"0,0","meta":{"label":"Forge a new blade"}},
                         {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Done. It should hold for now."}},
                         {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"A fine steel saber for you."}}
-                    ], "selected": "0,0" } }}
+                    ], "selected": "0,0" } }},
+                {"id":"3,0","gx":3,"gy":0,"meta":{"description":"Ruined tower with a view of the valley.","entities":["raven"]}},
+                {"id":"3,1","gx":3,"gy":1,"meta":{"description":"Secret crypt entrance.","entities":["crypt_keeper"]}}
             ],
             "selected": null,
             "globalMeta": {
@@ -191,12 +209,44 @@ VALUES
                     {"id":"villager","type":"person","name":"Displaced Villager"},
                     {"id":"scholar","type":"person","name":"Wandering Scholar"},
                     {"id":"priest","type":"person","name":"Chaplain of the Keep"},
-                    {"id":"blacksmith","type":"person","name":"Keep Blacksmith"}
+                    {"id":"blacksmith","type":"person","name":"Keep Blacksmith"},
+                    {"id":"raven","type":"creature","name":"Watchful Raven"},
+                    {"id":"crypt_keeper","type":"person","name":"Crypt Keeper"}
                 ],
                 "items": [
                     {"id":"crest_fragment","name":"Crest Fragment","description":"Piece of the chapel crest"},
                     {"id":"steel_saber","name":"Steel Saber","description":"Reliable newly forged blade"},
-                    {"id":"repair_kit","name":"Repair Kit","description":"Restores durability of equipment"}
+                    {"id":"repair_kit","name":"Repair Kit","description":"Restores durability of equipment"},
+                    {"id":"raven_feather","name":"Raven Feather","description":"A rare black feather"}
+                ]
+            }
+        }', TRUE),
+
+('Enchanted Forest', 'A magical forest filled with puzzles, fairies, and hidden treasures.', 2,
+        '{
+            "rooms": [
+                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Forest entrance with ancient trees.","entities":["elf_guard"]}},
+                {"id":"1,0","gx":1,"gy":0,"meta":{"description":"Glade with sparkling lights.","entities":["fairy"]}},
+                {"id":"1,1","gx":1,"gy":1,"meta":{"description":"Mossy stone circle. A puzzle awaits.","entities":["puzzle_stone"]}},
+                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Hidden pond with a talking frog.","entities":["frog"]}},
+                {"id":"2,0","gx":2,"gy":0,"meta":{"description":"Treehouse of the wise druid.","entities":["druid"]}}
+            ],
+            "selected": null,
+            "globalMeta": {
+                "gameName": "Enchanted Forest",
+                "gameDescription": "A magical forest filled with puzzles, fairies, and hidden treasures.",
+                "tags": ["forest","magic","puzzle","fairy"],
+                "entities": [
+                    {"id":"elf_guard","type":"person","name":"Elf Guard"},
+                    {"id":"fairy","type":"creature","name":"Forest Fairy"},
+                    {"id":"puzzle_stone","type":"object","name":"Puzzle Stone"},
+                    {"id":"frog","type":"creature","name":"Talking Frog"},
+                    {"id":"druid","type":"person","name":"Wise Druid"}
+                ],
+                "items": [
+                    {"id":"magic_leaf","name":"Magic Leaf","description":"Heals minor wounds"},
+                    {"id":"fairy_dust","name":"Fairy Dust","description":"Grants temporary flight"},
+                    {"id":"pond_pearl","name":"Pond Pearl","description":"A rare treasure from the frog"}
                 ]
             }
         }', TRUE);
