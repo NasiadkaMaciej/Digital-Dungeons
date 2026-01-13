@@ -104,7 +104,6 @@ export default function GameConsole({ initialData }) {
 
 	// ===== COMMAND HANDLERS =====
 	const handleExit = useCallback(() => {
-		// TODO: persist game state before leaving
 		router.push('/');
 	}, [router]);
 

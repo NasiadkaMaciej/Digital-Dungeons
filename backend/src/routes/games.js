@@ -1,8 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require('express-validator');
+const { body } = require('express-validator');
 const Game = require('../models/Game');
-const { auth, optionalAuth } = require('../middleware/auth');
+const { auth, optionalAuth, validateRequest } = require('../middleware/auth');
+
+// Helper to check ownership
+const checkGameOwnership = async (gameId, userId, res) => {
+	const game = await Game.findById(gameId);
+	if (!game) {
+		res.status(404).json({ error: 'Game not found' });
+		return null;
+	}
+	if (game.author_id !== userId) {
+		res.status(403).json({ error: 'Not authorized' });
+		return null;
+	}
+	return game;
+};
 
 // Get all published games
 router.get('/', optionalAuth, async (req, res, next) => {
@@ -42,10 +56,7 @@ router.post('/',
 	],
 	async (req, res, next) => {
 		try {
-			const errors = validationResult(req);
-			if (!errors.isEmpty()) {
-				return res.status(400).json({ errors: errors.array() });
-			}
+			if (!validateRequest(req, res)) return;
 
 			const { title, description, gameContent } = req.body;
 			const gameId = await Game.create({
@@ -68,14 +79,8 @@ router.post('/',
 // Update game
 router.put('/:id', auth, async (req, res, next) => {
 	try {
-		const game = await Game.findById(req.params.id);
-		if (!game) {
-			return res.status(404).json({ error: 'Game not found' });
-		}
-
-		if (game.author_id !== req.user.userId) {
-			return res.status(403).json({ error: 'Not authorized to edit this game' });
-		}
+		const game = await checkGameOwnership(req.params.id, req.user.userId, res);
+		if (!game) return;
 
 		const updated = await Game.update(req.params.id, req.body);
 		if (!updated) {
@@ -91,14 +96,8 @@ router.put('/:id', auth, async (req, res, next) => {
 // Delete game
 router.delete('/:id', auth, async (req, res, next) => {
 	try {
-		const game = await Game.findById(req.params.id);
-		if (!game) {
-			return res.status(404).json({ error: 'Game not found' });
-		}
-
-		if (game.author_id !== req.user.userId) {
-			return res.status(403).json({ error: 'Not authorized to delete this game' });
-		}
+		const game = await checkGameOwnership(req.params.id, req.user.userId, res);
+		if (!game) return;
 
 		await Game.delete(req.params.id);
 		res.json({ message: 'Game deleted successfully' });

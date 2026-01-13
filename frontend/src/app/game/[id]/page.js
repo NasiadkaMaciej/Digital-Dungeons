@@ -164,7 +164,7 @@ export default function GameDetailsPage() {
 			{/* Game Header */}
 			<div className="bg-background rounded-lg px-12 py-10 border border-foreground/10">
 				<span className="text-sm font-mono text-foreground/50">
-					Edited {new Date(game.create_date).toLocaleDateString()} {/* TODO: fetch edit date, fix.*/}
+					Published {new Date(game.create_date).toLocaleDateString()}
 				</span>
 				<div className="flex justify-between items-start mb-4">
 					<div>

@@ -1,4 +1,15 @@
 const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator');
+
+// Validation helper
+const validateRequest = (req, res) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		res.status(400).json({ errors: errors.array() });
+		return false;
+	}
+	return true;
+};
 
 const auth = (req, res, next) => {
 	try {
@@ -29,4 +40,4 @@ const optionalAuth = (req, res, next) => {
 	}
 };
 
-module.exports = { auth, optionalAuth };
+module.exports = { auth, optionalAuth, validateRequest };

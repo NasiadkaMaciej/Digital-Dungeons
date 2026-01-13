@@ -1,5 +1,14 @@
 const db = require('../config/database');
 
+// Helper to safely parse JSON
+const parseJSON = (str) => {
+	try {
+		return typeof str === 'string' ? JSON.parse(str) : str;
+	} catch {
+		return null;
+	}
+};
+
 class Game {
 	static async create({ title, description, authorId, gameContent }) {
 		const [result] = await db.execute(
@@ -18,7 +27,7 @@ class Game {
 			[gameId]
 		);
 		if (rows[0]) {
-			rows[0].game_content = JSON.parse(rows[0].game_content);
+			rows[0].game_content = parseJSON(rows[0].game_content);
 		}
 		return rows[0];
 	}

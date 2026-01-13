@@ -1,8 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require('express-validator');
+const { body } = require('express-validator');
 const Comment = require('../models/Comment');
-const { auth, optionalAuth } = require('../middleware/auth');
+const { auth, optionalAuth, validateRequest } = require('../middleware/auth');
+
+// Helper to check comment ownership
+const checkCommentOwnership = async (commentId, userId, res) => {
+	const comment = await Comment.findById(commentId);
+	if (!comment) {
+		res.status(404).json({ error: 'Comment not found' });
+		return null;
+	}
+	if (comment.user_id !== userId) {
+		res.status(403).json({ error: 'Not authorized' });
+		return null;
+	}
+	return comment;
+};
 
 // Get comments for a game
 router.get('/game/:gameId', optionalAuth, async (req, res, next) => {
@@ -27,10 +41,7 @@ router.post(
 	[body('content').trim().isLength({ min: 1, max: 1000 })],
 	async (req, res, next) => {
 		try {
-			const errors = validationResult(req);
-			if (!errors.isEmpty()) {
-				return res.status(400).json({ errors: errors.array() });
-			}
+			if (!validateRequest(req, res)) return;
 
 			const commentId = await Comment.create({
 				gameId: req.params.gameId,
@@ -53,19 +64,10 @@ router.put(
 	[body('content').trim().isLength({ min: 1, max: 1000 })],
 	async (req, res, next) => {
 		try {
-			const errors = validationResult(req);
-			if (!errors.isEmpty()) {
-				return res.status(400).json({ errors: errors.array() });
-			}
+			if (!validateRequest(req, res)) return;
 
-			const comment = await Comment.findById(req.params.commentId);
-			if (!comment) {
-				return res.status(404).json({ error: 'Comment not found' });
-			}
-
-			if (comment.user_id !== req.user.userId) {
-				return res.status(403).json({ error: 'Not authorized' });
-			}
+			const comment = await checkCommentOwnership(req.params.commentId, req.user.userId, res);
+			if (!comment) return;
 
 			await Comment.update(req.params.commentId, req.body.content);
 			const updated = await Comment.findById(req.params.commentId);
@@ -79,14 +81,8 @@ router.put(
 // Delete comment
 router.delete('/:commentId', auth, async (req, res, next) => {
 	try {
-		const comment = await Comment.findById(req.params.commentId);
-		if (!comment) {
-			return res.status(404).json({ error: 'Comment not found' });
-		}
-
-		if (comment.user_id !== req.user.userId) {
-			return res.status(403).json({ error: 'Not authorized' });
-		}
+		const comment = await checkCommentOwnership(req.params.commentId, req.user.userId, res);
+		if (!comment) return;
 
 		await Comment.delete(req.params.commentId);
 		res.json({ message: 'Comment deleted' });

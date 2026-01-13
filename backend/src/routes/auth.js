@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { body, validationResult } = require('express-validator');
+const { body } = require('express-validator');
 const User = require('../models/User');
-const { auth } = require('../middleware/auth');
+const { auth, validateRequest } = require('../middleware/auth');
 
 // Register
 router.post('/register',
@@ -14,10 +14,7 @@ router.post('/register',
 	],
 	async (req, res, next) => {
 		try {
-			const errors = validationResult(req);
-			if (!errors.isEmpty()) {
-				return res.status(400).json({ errors: errors.array() });
-			}
+			if (!validateRequest(req, res)) return;
 
 			const { username, email, password } = req.body;
 
@@ -61,10 +58,7 @@ router.post('/login',
 	],
 	async (req, res, next) => {
 		try {
-			const errors = validationResult(req);
-			if (!errors.isEmpty()) {
-				return res.status(400).json({ errors: errors.array() });
-			}
+			if (!validateRequest(req, res)) return;
 
 			const { email, password } = req.body;
 
