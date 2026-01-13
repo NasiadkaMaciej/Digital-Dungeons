@@ -15,13 +15,16 @@ Digital Dungeons łączy nostalgię klasycznych tekstowych gier RPG z nowoczesny
 
 ## Główne Funkcjonalności
 
-### Gameplay Engine [MVP]
+### Gameplay Engine ✅
 - **Widok konsolowy** - Klasyczny interfejs tekstowy przypominający stare gry RPG
-- **System pokojów** - Gry zbudowane na gridzie połączonych pokojów z przejściami
-- **Interaktywne wybory** - Gracze podejmują decyzje wpływające na rozwój fabuły
-- **Obsługa klawiatury i przycisków** - Elastyczne opcje sterowania
+- **System pokojów** - Gry zbudowane na gridzie połączonych pokoi z przejściami
+- **System inwentarza** - Zbieraj, używaj i zarządzaj przedmiotami
+- **System walki** - Walcz z wrogami używając broni
+- **System dialogów** - Interaktywne rozmowy z NPC z drzewkami dialogowymi
+- **System questów** - Skrzynie ze skarbami, strażnicy, klucze
+- **Obsługa komend** - Ponad 20 różnych komend do interakcji ze światem gry
 
-### Edytor Gier [MVP]
+### Edytor Gier ✅
 - **Wizualny projektant** - Drag & drop interface do tworzenia mapy gry na canvasie
 - **Panel konfiguracji pokojów** - Szczegółowe ustawienia dla każdego pomieszczenia:
   - Zarządzanie przedmiotami

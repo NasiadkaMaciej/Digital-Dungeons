@@ -287,7 +287,7 @@ VALUES
                 "entities": [
                     {"id":"village_elder","type":"person","name":"Village Elder","hostile":false},
                     {"id":"blacksmith","type":"person","name":"Blacksmith","hostile":false},
-                    {"id":"treasure_goblin","type":"monster","name":"Treasure Goblin","hostile":true},
+                    {"id":"treasure_goblin","type":"monster","name":"Treasure Goblin","hostile":true,"drops":["goblin_key"]},
                     {"id":"guard","type":"person","name":"Village Guard","hostile":false}
                 ],
                 "items": [
