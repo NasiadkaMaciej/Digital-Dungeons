@@ -402,6 +402,10 @@ function ActionBar({ onSave, onLoad, onNew, globalDirty, commitGlobalMeta, gameN
 	);
 }
 
+// Helper: Standard input styling
+const inputClass = "w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500";
+const buttonClass = "px-3 py-1.5 rounded text-xs font-semibold";
+
 function EntityManager({ entitiesDraft, setEntitiesDraft, setGlobalDirty, rooms }) {
 	const [newEntityId, setNewEntityId] = useState('');
 	const [newEntityName, setNewEntityName] = useState('');
@@ -447,29 +451,15 @@ function EntityManager({ entitiesDraft, setEntitiesDraft, setGlobalDirty, rooms 
 		<div className="space-y-2">
 			<span className="text-xs uppercase tracking-wide text-foreground/50">Entity Registry</span>
 			<form onSubmit={addEntity} className="space-y-2">
-				<input
-					className="w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500"
-					value={newEntityId}
-					onChange={e => setNewEntityId(e.target.value)}
-					placeholder="Entity ID (e.g. slime1)"
-				/>
-				<input
-					className="w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500"
-					value={newEntityName}
-					onChange={e => setNewEntityName(e.target.value)}
-					placeholder="Display name (e.g. Green Slime)"
-				/>
+				<input className={inputClass} value={newEntityId} onChange={e => setNewEntityId(e.target.value)} placeholder="Entity ID (e.g. slime1)" />
+				<input className={inputClass} value={newEntityName} onChange={e => setNewEntityName(e.target.value)} placeholder="Display name (e.g. Green Slime)" />
 				<div className="flex gap-2">
-					<select
-						className="flex-1 px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500"
-						value={newEntityType}
-						onChange={e => setNewEntityType(e.target.value)}
-					>
+					<select className={inputClass + " flex-1"} value={newEntityType} onChange={e => setNewEntityType(e.target.value)}>
 						<option value="monster">Monster</option>
 						<option value="boss">Boss</option>
 						<option value="person">Person (NPC)</option>
 					</select>
-					<button type="submit" className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded text-xs font-semibold">Add</button>
+					<button type="submit" className={buttonClass + " bg-indigo-600 hover:bg-indigo-500"}>Add</button>
 				</div>
 			</form>
 			<div className="space-y-1 max-h-40 overflow-y-auto">
@@ -479,10 +469,7 @@ function EntityManager({ entitiesDraft, setEntitiesDraft, setGlobalDirty, rooms 
 							<div className="font-medium truncate">{entity.name}</div>
 							<div className="text-foreground/50 text-[10px]">{entity.id} • {entity.type}</div>
 						</div>
-						<button
-							onClick={() => removeEntity(entity.id)}
-							className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]"
-						>Del</button>
+						<button onClick={() => removeEntity(entity.id)} className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]">Del</button>
 					</div>
 				))}
 				{entitiesDraft.length === 0 && <p className="text-xs text-foreground/40">No entities defined yet.</p>}
@@ -588,8 +575,7 @@ function ItemsManager({ itemsDraft, setItemsDraft, setGlobalDirty }) {
 			alert('Item ID already exists!');
 			return;
 		}
-		const next = [...itemsDraft, { id, name, description: newItemDesc.trim() }];
-		setItemsDraft(next);
+		setItemsDraft([...itemsDraft, { id, name, description: newItemDesc.trim() }]);
 		setGlobalDirty(true);
 		setNewItemId('');
 		setNewItemName('');
@@ -597,8 +583,7 @@ function ItemsManager({ itemsDraft, setItemsDraft, setGlobalDirty }) {
 	}
 
 	function removeItem(itemId) {
-		const next = itemsDraft.filter(i => i.id !== itemId);
-		setItemsDraft(next);
+		setItemsDraft(itemsDraft.filter(i => i.id !== itemId));
 		setGlobalDirty(true);
 	}
 
@@ -606,25 +591,10 @@ function ItemsManager({ itemsDraft, setItemsDraft, setGlobalDirty }) {
 		<div className="space-y-2">
 			<span className="text-xs uppercase tracking-wide text-foreground/50">Item Registry</span>
 			<form onSubmit={addItem} className="space-y-2">
-				<input
-					className="w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500"
-					value={newItemId}
-					onChange={e => setNewItemId(e.target.value)}
-					placeholder="Item ID (e.g. health_potion)"
-				/>
-				<input
-					className="w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500"
-					value={newItemName}
-					onChange={e => setNewItemName(e.target.value)}
-					placeholder="Display name (e.g. Health Potion)"
-				/>
-				<input
-					className="w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500"
-					value={newItemDesc}
-					onChange={e => setNewItemDesc(e.target.value)}
-					placeholder="Description (optional)"
-				/>
-				<button type="submit" className="w-full px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded text-xs font-semibold">Add Item</button>
+				<input className={inputClass} value={newItemId} onChange={e => setNewItemId(e.target.value)} placeholder="Item ID (e.g. health_potion)" />
+				<input className={inputClass} value={newItemName} onChange={e => setNewItemName(e.target.value)} placeholder="Display name (e.g. Health Potion)" />
+				<input className={inputClass} value={newItemDesc} onChange={e => setNewItemDesc(e.target.value)} placeholder="Description (optional)" />
+				<button type="submit" className={buttonClass + " w-full bg-indigo-600 hover:bg-indigo-500"}>Add Item</button>
 			</form>
 			<div className="space-y-1 max-h-40 overflow-y-auto">
 				{itemsDraft.map(item => (
@@ -633,10 +603,7 @@ function ItemsManager({ itemsDraft, setItemsDraft, setGlobalDirty }) {
 							<div className="font-medium truncate">{item.name}</div>
 							<div className="text-foreground/50 text-[10px] truncate">{item.id}{item.description ? ` • ${item.description}` : ''}</div>
 						</div>
-						<button
-							onClick={() => removeItem(item.id)}
-							className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]"
-						>Del</button>
+						<button onClick={() => removeItem(item.id)} className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]">Del</button>
 					</div>
 				))}
 				{itemsDraft.length === 0 && <p className="text-xs text-foreground/40">No items defined yet.</p>}

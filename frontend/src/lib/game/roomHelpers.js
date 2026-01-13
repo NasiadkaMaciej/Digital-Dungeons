@@ -29,60 +29,67 @@ export function findRoomByCoords(rooms, gx, gy) {
 }
 
 /**
+ * Helper: Get entity names from IDs
+ */
+function getEntityNames(entityIds, globalMeta) {
+	return entityIds.map(id => {
+		const entity = globalMeta.entities?.find(e => e.id === id);
+		return entity?.name || id;
+	});
+}
+
+/**
+ * Helper: Get item names from IDs
+ */
+function getItemNames(itemIds, globalMeta) {
+	return itemIds.map(id => {
+		const item = globalMeta.items?.find(i => i.id === id);
+		return item?.name || id;
+	});
+}
+
+/**
  * Generate a full description of a room including entities, items, and chests
  */
 export function describeRoom(room, roomState = {}, globalMeta = {}) {
 	if (!room) return 'You are nowhere. This is probably a bug.';
 
-	const desc = room.meta?.description ||
-		"There is nothing remarkable about this place. The level designer hasn't done their job yet.";
+	const desc = room.meta?.description || "There is nothing remarkable about this place. The level designer hasn't done their job yet.";
+	const parts = [desc];
 
-	let fullDesc = `${desc}`;
-
-	// List alive entities (NPCs) in the room
+	// List alive entities
 	const entities = room.meta?.entities || [];
 	const defeatedEntities = roomState.defeatedEntities || [];
 	const aliveEntities = entities.filter(e => !defeatedEntities.includes(e));
 
 	if (aliveEntities.length > 0) {
-		const entityDescs = aliveEntities.map(entityId => {
-			const entityData = globalMeta.entities?.find(e => e.id === entityId);
-			return entityData ? entityData.name : entityId;
-		});
-		fullDesc += `\n\nYou see: ${entityDescs.join(', ')}`;
+		parts.push(`\n\nYou see: ${getEntityNames(aliveEntities, globalMeta).join(', ')}`);
 	}
 
 	// Show defeated entities
 	const defeatedHere = entities.filter(e => defeatedEntities.includes(e));
 	if (defeatedHere.length > 0) {
-		const defeatedDescs = defeatedHere.map(entityId => {
-			const entityData = globalMeta.entities?.find(e => e.id === entityId);
-			return entityData ? entityData.name : entityId;
-		});
-		fullDesc += `\n\nDefeated: ${defeatedDescs.join(', ')}`;
+		parts.push(`\n\nDefeated: ${getEntityNames(defeatedHere, globalMeta).join(', ')}`);
 	}
 
-	// List items in the room
+	// List items
 	const roomItems = roomState.items || [];
 	if (roomItems.length > 0) {
-		const itemDescs = roomItems.map(itemId => {
-			const itemData = globalMeta.items?.find(i => i.id === itemId);
-			return itemData ? itemData.name : itemId;
-		});
-		fullDesc += `\n\nItems here: ${itemDescs.join(', ')}`;
+		parts.push(`\n\nItems here: ${getItemNames(roomItems, globalMeta).join(', ')}`);
 	}
 
-	// Note if there's a chest
+	// Note chest
 	if (room.meta?.hasChest && !roomState.chestOpened) {
-		fullDesc += '\n\nYou notice a chest here.';
-		// Mention if it's guarded
-		if (room.meta?.chestGuardian && !roomState.guardiansDefeated?.includes(room.meta.chestGuardian)) {
-			const guardianData = globalMeta.entities?.find(e => e.id === room.meta.chestGuardian);
-			fullDesc += ` It appears to be guarded by ${guardianData?.name || 'something'}.`;
+		parts.push('\n\nYou notice a chest here.');
+
+		const guardian = room.meta?.chestGuardian;
+		if (guardian && !roomState.guardiansDefeated?.includes(guardian)) {
+			const guardianEntity = globalMeta.entities?.find(e => e.id === guardian);
+			parts.push(` It appears to be guarded by ${guardianEntity?.name || 'something'}.`);
 		}
 	}
 
-	return fullDesc;
+	return parts.join('');
 }
 
 /**

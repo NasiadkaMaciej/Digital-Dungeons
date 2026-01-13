@@ -99,89 +99,61 @@ export const usersApi = {
 	},
 };
 
+// Helper function for common REST operations
+const createRestApi = (basePath) => ({
+	getAll: () => apiRequest(basePath),
+	getById: (id) => apiRequest(`${basePath}/${id}`),
+	create: (data) => apiRequest(basePath, {
+		method: 'POST',
+		body: JSON.stringify(data),
+	}),
+	update: (id, data) => apiRequest(`${basePath}/${id}`, {
+		method: 'PUT',
+		body: JSON.stringify(data),
+	}),
+	delete: (id) => apiRequest(`${basePath}/${id}`, {
+		method: 'DELETE',
+	}),
+});
+
 // Games API
 export const gamesApi = {
-	async getAllGames() {
-		return apiRequest('/games');
-	},
-
-	async getGameById(id) {
-		return apiRequest(`/games/${id}`);
-	},
-
-	async createGame(gameData) {
-		return apiRequest('/games', {
-			method: 'POST',
-			body: JSON.stringify(gameData),
-		});
-	},
-
-	async updateGame(id, gameData) {
-		return apiRequest(`/games/${id}`, {
-			method: 'PUT',
-			body: JSON.stringify(gameData),
-		});
-	},
-
-	async deleteGame(id) {
-		return apiRequest(`/games/${id}`, {
-			method: 'DELETE',
-		});
-	},
-
-	async getUserGames(userId) {
-		return apiRequest(`/games/user/${userId}`);
-	},
+	getAllGames: () => apiRequest('/games'),
+	getGameById: (id) => apiRequest(`/games/${id}`),
+	createGame: (gameData) => apiRequest('/games', {
+		method: 'POST',
+		body: JSON.stringify(gameData),
+	}),
+	updateGame: (id, gameData) => apiRequest(`/games/${id}`, {
+		method: 'PUT',
+		body: JSON.stringify(gameData),
+	}),
+	deleteGame: (id) => apiRequest(`/games/${id}`, { method: 'DELETE' }),
+	getUserGames: (userId) => apiRequest(`/games/user/${userId}`),
 };
 
 // Likes API
 export const likesApi = {
-	async likeGame(gameId) {
-		return apiRequest(`/likes/${gameId}`, {
-			method: 'POST',
-		});
-	},
-
-	async unlikeGame(gameId) {
-		return apiRequest(`/likes/${gameId}`, {
-			method: 'DELETE',
-		});
-	},
-
-	async checkLike(gameId) {
-		return apiRequest(`/likes/check/${gameId}`);
-	},
-
-	async getUserLikes(userId, limit = 50, offset = 0) {
-		return apiRequest(`/likes/user/${userId}?limit=${limit}&offset=${offset}`);
-	},
+	likeGame: (gameId) => apiRequest(`/likes/${gameId}`, { method: 'POST' }),
+	unlikeGame: (gameId) => apiRequest(`/likes/${gameId}`, { method: 'DELETE' }),
+	checkLike: (gameId) => apiRequest(`/likes/check/${gameId}`),
+	getUserLikes: (userId, limit = 50, offset = 0) =>
+		apiRequest(`/likes/user/${userId}?limit=${limit}&offset=${offset}`),
 };
 
 // Comments API
 export const commentsApi = {
-	async getGameComments(gameId, limit = 50, offset = 0) {
-		return apiRequest(`/comments/game/${gameId}?limit=${limit}&offset=${offset}`);
-	},
-
-	async createComment(gameId, content) {
-		return apiRequest(`/comments/${gameId}`, {
-			method: 'POST',
-			body: JSON.stringify({ content }),
-		});
-	},
-
-	async updateComment(commentId, content) {
-		return apiRequest(`/comments/${commentId}`, {
-			method: 'PUT',
-			body: JSON.stringify({ content }),
-		});
-	},
-
-	async deleteComment(commentId) {
-		return apiRequest(`/comments/${commentId}`, {
-			method: 'DELETE',
-		});
-	},
+	getGameComments: (gameId, limit = 50, offset = 0) =>
+		apiRequest(`/comments/game/${gameId}?limit=${limit}&offset=${offset}`),
+	createComment: (gameId, content) => apiRequest(`/comments/${gameId}`, {
+		method: 'POST',
+		body: JSON.stringify({ content }),
+	}),
+	updateComment: (commentId, content) => apiRequest(`/comments/${commentId}`, {
+		method: 'PUT',
+		body: JSON.stringify({ content }),
+	}),
+	deleteComment: (commentId) => apiRequest(`/comments/${commentId}`, { method: 'DELETE' }),
 };
 
 export { ApiError };

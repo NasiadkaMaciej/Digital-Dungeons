@@ -65,7 +65,6 @@ export const conversationSketchFactory = (p) => {
 		// Explicitly enable looping at 60fps
 		p.frameRate(60);
 		p.loop();
-		console.log('[ConvSketch] setup completed, canvas size:', p.width, 'x', p.height, 'looping:', p.isLooping?.() ?? 'unknown');
 		centre();
 
 		// seed
@@ -737,12 +736,9 @@ export const conversationSketchFactory = (p) => {
 		}
 
 		// Force draw refresh
-		console.log('[ConvSketch] loadFromState complete, nodes:', nodes.size);
 		try { p.loop(); } catch { }
 		try { p.redraw(); } catch { }
-	}
-
-	function exportState() {
+	} function exportState() {
 		const out = [];
 		for (const n of nodes.values()) {
 			const id = key(n.gx, n.gy);

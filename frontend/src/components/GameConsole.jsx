@@ -40,6 +40,7 @@ export default function GameConsole({ initialData }) {
 	// ===== REFS =====
 	const inputRef = useRef(null);
 	const logEndRef = useRef(null);
+	const logContainerRef = useRef(null);
 
 	// ===== UTILITY FUNCTIONS =====
 	const appendToLog = useCallback((lines) => {
@@ -76,11 +77,20 @@ export default function GameConsole({ initialData }) {
 		focusInput();
 	}, [focusInput]);
 
-	// Auto-scroll log
+	// Auto-scroll log to bottom after each update (keeps input visible)
 	useEffect(() => {
-		if (logEndRef.current) {
-			logEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-		}
+		// Use setTimeout to ensure DOM is fully updated and rendered
+		const scrollToBottom = () => {
+			if (logContainerRef.current) {
+				logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+			}
+		};
+
+		// Try multiple times to ensure scroll happens even with slow rendering
+		requestAnimationFrame(scrollToBottom);
+		const timer = setTimeout(scrollToBottom, 50);
+
+		return () => clearTimeout(timer);
 	}, [log]);
 
 	// Disable body scroll
@@ -500,34 +510,39 @@ export default function GameConsole({ initialData }) {
 	// ===== RENDER =====
 	return (
 		<div
-			className="min-h-screen flex flex-col bg-black text-white font-mono"
+			className="h-screen flex flex-col bg-black text-white font-mono"
 			onClick={handleContainerClick}
 		>
-			{/* Exit button */}
-			<div className="absolute top-3 right-4 z-[1000000]">
+			{/* Header with welcome text and exit button */}
+			<div className="flex-shrink-0 border-b border-neutral-700 px-4 py-3 relative">
+				<div className="pr-32">
+					<div className="whitespace-pre-wrap">
+						{log.slice(0, 2).join('\n')}
+					</div>
+				</div>
 				<button
 					type="button"
 					onClick={handleExit}
-					className="px-3 py-1 text-xs border border-neutral-600 bg-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
+					className="absolute top-3 right-4 px-3 py-1 text-xs border border-neutral-600 bg-neutral-900 hover:bg-neutral-800 transition-colors cursor-pointer"
 				>
 					SAVE &amp; QUIT
 				</button>
 			</div>
 
-			{/* Log / output area */}
-			<div className="flex-1 overflow-y-auto p-4">
-				{log.map((line, index) => (
-					<div key={index} className="whitespace-pre-wrap">
+			{/* Scrollable game history */}
+			<div ref={logContainerRef} className="flex-1 overflow-y-auto p-4 scroll-smooth">
+				{log.slice(2).map((line, index) => (
+					<div key={index + 2} className="whitespace-pre-wrap">
 						{line}
 					</div>
 				))}
-				<div ref={logEndRef} />
+				<div ref={logEndRef} className="h-8" />
 			</div>
 
-			{/* Input bar */}
+			{/* Fixed input bar at bottom */}
 			<form
 				onSubmit={handleSubmit}
-				className="border-t border-neutral-700 px-4 py-2"
+				className="flex-shrink-0 border-t border-neutral-700 px-4 py-2 bg-black"
 			>
 				<div className="flex items-center gap-2">
 					<span className="text-neutral-500 select-none">{'>'}</span>

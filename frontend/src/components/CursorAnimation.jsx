@@ -10,20 +10,16 @@ export default function CursorAnimation() {
 		if (!el) return;
 
 		const animation = setInterval(() => {
-			if (!cursorRef.current) return;
-
-			cursorRef.current.classList.toggle("bg-foreground");
-			cursorRef.current.classList.toggle("text-background");
-			cursorRef.current.classList.toggle("text-foreground");
-			cursorRef.current.classList.toggle("bg-transparent");
+			el?.classList.toggle("bg-foreground");
+			el?.classList.toggle("text-background");
+			el?.classList.toggle("text-foreground");
+			el?.classList.toggle("bg-transparent");
 		}, 600);
 
-		return () => {
-			window.clearInterval(animation);
-		}
-	}, [])
+		return () => clearInterval(animation);
+	}, []);
 
 	return (
-		<mark id={"hero-cursor-animation"} ref={cursorRef} className={"bg-foreground text-background"}>.</mark>
-	)
+		<mark ref={cursorRef} className="bg-foreground text-background">.</mark>
+	);
 }
