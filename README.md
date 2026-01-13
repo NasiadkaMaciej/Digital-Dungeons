@@ -161,9 +161,55 @@ Projekt jest rozwijany na potrzeby edukacyjne. Szczegóły licencji będą dodan
 - `PUT /api/users/profile` — edytuj profil użytkownika
 - `GET /api/users/:userId/games` — pobierz gry utworzone przez użytkownika
 
-### Playthroughs
-- `GET /api/playthroughs/user` — pobierz rozgrywki użytkownika
-- `GET /api/playthroughs/:id` — pobierz szczegóły rozgrywki
-- `POST /api/playthroughs` — rozpocznij nową rozgrywkę
-- `PUT /api/playthroughs/:id` — aktualizuj stan rozgrywki
+
+### Playthroughs (Rozgrywki)
+- `GET /api/playthroughs/user` — pobierz rozgrywki zalogowanego użytkownika
+- `GET /api/playthroughs/:id` — pobierz szczegóły rozgrywki (tylko właściciel)
+- `POST /api/playthroughs` — rozpocznij nową rozgrywkę (wymaga `gameId`, opcjonalnie `gameState`)
+- `PUT /api/playthroughs/:id` — aktualizuj stan rozgrywki (`gameState` jako JSON, `status`)
 - `DELETE /api/playthroughs/:id` — usuń rozgrywkę
+- `POST /api/playthroughs/continue/:gameId` — pobierz lub utwórz rozgrywkę dla gry
+
+---
+
+## Dokumentacja: Zapis stanu gry w JSON
+
+### Format `game_state` (Playthroughs)
+
+Stan gry jest zapisywany w bazie w polu `game_state` jako obiekt JSON. Backend oczekuje, że będzie to elastyczna struktura, którą można rozszerzać o dowolne pola opisujące postęp gracza.
+
+#### Przykładowy zapis:
+```json
+{
+  "currentRoom": 1,
+  "inventory": ["sword", "key"],
+  "playerStats": {
+    "health": 100,
+    "mana": 50
+  },
+  "questProgress": {
+    "mainQuest": "started",
+    "sideQuests": ["find_goblin", "open_chest"]
+  }
+}
+```
+
+#### Typowe pola:
+- `currentRoom` — identyfikator lub nazwa aktualnego pokoju
+- `inventory` — tablica przedmiotów posiadanych przez gracza
+- `playerStats` — obiekt ze statystykami gracza (np. zdrowie, mana)
+- `questProgress` — obiekt opisujący postęp w zadaniach
+
+#### Flow zapisu i odczytu:
+- Rozpoczęcie rozgrywki: Tworzony jest nowy rekord z początkowym stanem gry
+- Aktualizacja: Stan gry jest nadpisywany przez endpoint `PUT`, przyjmując nowy obiekt JSON
+- Odczyt: Stan gry jest zwracany w odpowiedzi na zapytania o rozgrywkę
+
+#### Wskazówki dla deweloperów:
+- Backend nie narzuca sztywnego schematu — możesz rozszerzać strukturę o własne pola
+- Zaleca się trzymanie kluczowych informacji (lokacja, ekwipunek, statystyki, postęp) w głównych polach
+
+#### Wskazówki dla użytkowników:
+- Stan gry jest automatycznie zapisywany podczas rozgrywki i można go wznowić w dowolnym momencie
+
+---

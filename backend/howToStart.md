@@ -35,7 +35,7 @@ EXIT;
 
 ```bash
 cd backend
-mysql -u ddungeons -p digital_dungeons < init-db.sql
+sudo mysql -u ddungeons -p < init-db.sql
 ```
 
 lub dla Windows:

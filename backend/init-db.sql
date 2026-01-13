@@ -94,7 +94,7 @@ VALUES
 ('Town Square Tutorial', 'A guided intro showcasing conversations and branching.', 1,
         '{
             "rooms": [
-                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Town square with a helpful Guide.","entities":["guide"],"conversationId":"intro_talk","conversationRepeatable":false,
+                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Town square with a helpful Guide.","entities":["guide"],"items":["gold_coin"],"conversationId":"intro_talk","conversationRepeatable":false,
                     "conversationState": {"nodes": [
                         {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Welcome to Digital Dungeons!"}},
                         {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Tell me about movement"}},
@@ -102,7 +102,7 @@ VALUES
                         {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Use WASD/Arrows to move."}},
                         {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"Click or press Space to attack."}}
                     ], "selected": "0,0" } }},
-                {"id":"1,0","gx":1,"gy":0,"meta":{"hasChest":true,"description":"Supply stall with basic loot.","entities":["merchant"],"conversationId":"shop_chat","conversationRepeatable":true,
+                {"id":"1,0","gx":1,"gy":0,"meta":{"hasChest":true,"description":"Supply stall with basic loot.","entities":["merchant"],"items":["health_potion"],"conversationId":"shop_chat","conversationRepeatable":true,
                     "conversationState": {"nodes": [
                         {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Welcome! Want to browse goods?"}},
                         {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Show me potions"}},
@@ -110,14 +110,14 @@ VALUES
                         {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"We have Health and Mana potions."}},
                         {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"A Rusty Sword and a Wooden Bow."}}
                     ], "selected": "0,0" } }},
-                {"id":"0,1","gx":0,"gy":1,"meta":{"description":"Training dummy area.","entities":["trainer"]}},
+                {"id":"0,1","gx":0,"gy":1,"meta":{"description":"Training dummy area.","entities":["trainer"],"items":["rusty_sword"]}},
                 {"id":"1,1","gx":1,"gy":1,"meta":{"description":"Fountain plaza with a mysterious stranger.","entities":["stranger"],"conversationId":"stranger_intro","conversationRepeatable":true,
                     "conversationState": {"nodes": [
                         {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Care for a riddle?"}},
                         {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Yes, tell me!"}},
                         {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"What walks on four legs in the morning..."}}
                     ], "selected": "0,0" } }},
-                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Hidden alley with a locked door.","entities":["thief"]}}
+                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Hidden alley with a locked door.","entities":["thief"],"items":["silver_key"]}}
             ],
             "selected": null,
             "globalMeta": {
@@ -142,10 +142,10 @@ VALUES
 ('Goblin Caves', 'Explore winding caves inhabited by goblins.', 2,
         '{
             "rooms": [
-                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Cave entrance","entities":["scout"]}},
+                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Cave entrance","entities":["scout"],"items":["torch"]}},
                 {"id":"1,0","gx":1,"gy":0,"meta":{"hasChest":true,"description":"Treasure nook","entities":["scout","goblin_chief"]}},
-                {"id":"1,1","gx":1,"gy":1,"meta":{"conversationId":"chief_dialog","conversationRepeatable":true,"description":"Chief\u2019s den","entities":["goblin_chief"]}},
-                {"id":"2,0","gx":2,"gy":0,"meta":{"description":"Collapsed tunnel with glowing mushrooms.","entities":["mushroom"]}},
+                {"id":"1,1","gx":1,"gy":1,"meta":{"conversationId":"chief_dialog","conversationRepeatable":true,"description":"Chief\u2019s den","entities":["goblin_chief"],"items":["lockpick"]}},
+                {"id":"2,0","gx":2,"gy":0,"meta":{"description":"Collapsed tunnel with glowing mushrooms.","entities":["mushroom"],"items":["mushroom_cap"]}},
                 {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Goblin nursery.","entities":["goblin_child"]}}
             ],
             "selected": null,
@@ -170,7 +170,7 @@ VALUES
         '{
             "rooms": [
                 {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Broken gate into the keep.","entities":["sentry"]}},
-                {"id":"1,0","gx":1,"gy":0,"meta":{"description":"Courtyard littered with debris.","entities":["sentry","villager"]}},
+                {"id":"1,0","gx":1,"gy":0,"meta":{"description":"Courtyard littered with debris.","entities":["sentry","villager"],"items":["repair_kit"]}},
                 {"id":"2,0","gx":2,"gy":0,"meta":{"hasChest":true,"description":"Supply cache under the stairs.","entities":["villager"]}},
                 {"id":"0,1","gx":0,"gy":1,"meta":{"description":"Collapsed library.","entities":["scholar"],"conversationId":"lore_intro","conversationRepeatable":false,
                     "conversationState": {"nodes": [
@@ -180,7 +180,7 @@ VALUES
                         {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Built by the Starfall Order."}},
                         {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"Seek the crest in the chapel."}}
                     ], "selected": "0,0" } }},
-                {"id":"1,1","gx":1,"gy":1,"meta":{"description":"Chapel of the fallen crest.","entities":["priest"],"conversationId":"chapel_choice","conversationRepeatable":true,
+                {"id":"1,1","gx":1,"gy":1,"meta":{"description":"Chapel of the fallen crest.","entities":["priest"],"items":["crest_fragment"],"conversationId":"chapel_choice","conversationRepeatable":true,
                     "conversationState": {"nodes": [
                         {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"You bear the scholars request?"}},
                         {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Yes, I seek the crest"}},
@@ -188,7 +188,7 @@ VALUES
                         {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Take this crest fragment."}},
                         {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"Pray and reflect upon your path."}}
                     ], "selected": "0,0" } }},
-                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Armory with damaged weapons.","entities":["blacksmith"],"conversationId":"forge_help","conversationRepeatable":true,
+                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Armory with damaged weapons.","entities":["blacksmith"],"items":["steel_saber"],"conversationId":"forge_help","conversationRepeatable":true,
                     "conversationState": {"nodes": [
                         {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Need something fixed or forged?"}},
                         {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Repair my sword"}},
@@ -196,7 +196,7 @@ VALUES
                         {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Done. It should hold for now."}},
                         {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"A fine steel saber for you."}}
                     ], "selected": "0,0" } }},
-                {"id":"3,0","gx":3,"gy":0,"meta":{"description":"Ruined tower with a view of the valley.","entities":["raven"]}},
+                {"id":"3,0","gx":3,"gy":0,"meta":{"description":"Ruined tower with a view of the valley.","entities":["raven"],"items":["raven_feather"]}},
                 {"id":"3,1","gx":3,"gy":1,"meta":{"description":"Secret crypt entrance.","entities":["crypt_keeper"]}}
             ],
             "selected": null,
@@ -225,10 +225,10 @@ VALUES
 ('Enchanted Forest', 'A magical forest filled with puzzles, fairies, and hidden treasures.', 2,
         '{
             "rooms": [
-                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Forest entrance with ancient trees.","entities":["elf_guard"]}},
-                {"id":"1,0","gx":1,"gy":0,"meta":{"description":"Glade with sparkling lights.","entities":["fairy"]}},
+                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Forest entrance with ancient trees.","entities":["elf_guard"],"items":["magic_leaf"]}},
+                {"id":"1,0","gx":1,"gy":0,"meta":{"description":"Glade with sparkling lights.","entities":["fairy"],"items":["fairy_dust"]}},
                 {"id":"1,1","gx":1,"gy":1,"meta":{"description":"Mossy stone circle. A puzzle awaits.","entities":["puzzle_stone"]}},
-                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Hidden pond with a talking frog.","entities":["frog"]}},
+                {"id":"2,1","gx":2,"gy":1,"meta":{"description":"Hidden pond with a talking frog.","entities":["frog"],"items":["pond_pearl"]}},
                 {"id":"2,0","gx":2,"gy":0,"meta":{"description":"Treehouse of the wise druid.","entities":["druid"]}}
             ],
             "selected": null,
@@ -247,6 +247,55 @@ VALUES
                     {"id":"magic_leaf","name":"Magic Leaf","description":"Heals minor wounds"},
                     {"id":"fairy_dust","name":"Fairy Dust","description":"Grants temporary flight"},
                     {"id":"pond_pearl","name":"Pond Pearl","description":"A rare treasure from the frog"}
+                ]
+            }
+        }', TRUE),
+
+('The Goblin\'s Treasure', 'A complete adventure - find a sword, defeat the goblin, get the key, and claim the treasure!', 1,
+        '{
+            "rooms": [
+                {"id":"0,0","gx":0,"gy":0,"meta":{"description":"Village square. The elder stands near the fountain.","entities":["village_elder"],"conversationId":"elder_intro","conversationRepeatable":false,
+                    "conversationState": {"nodes": [
+                        {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Greetings, traveler! A vicious goblin has taken residence in the old armory to the east."}},
+                        {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"Tell me more about the goblin."}},
+                        {"id":"1,1","gx":1,"gy":1,"parentId":"0,0","meta":{"label":"What should I do?"}},
+                        {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"The creature guards a precious treasure chest. No one has been able to defeat it."}},
+                        {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"Find a weapon and defeat the beast! The blacksmith to the south may help."}}
+                    ], "selected": "0,0" } }},
+                {"id":"0,1","gx":0,"gy":1,"meta":{"description":"Blacksmith workshop. Tools hang on the walls.","entities":["blacksmith"],"items":["iron_sword"],"conversationId":"blacksmith_chat","conversationRepeatable":true,
+                    "conversationState": {"nodes": [
+                        {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"Welcome to my workshop! I hear you are going after that goblin."}},
+                        {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"I need a weapon."}},
+                        {"id":"1,1","gx":1,"gy":1,"parentId":"0,0","meta":{"label":"Any advice?"}},
+                        {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"Take that iron sword on the bench. It should serve you well!"}},
+                        {"id":"2,1","gx":2,"gy":1,"parentId":"1,1","meta":{"label":"Be brave! The goblin is fierce but not invincible."}}
+                    ], "selected": "0,0" } }},
+                {"id":"1,1","gx":1,"gy":1,"meta":{"description":"Empty storage room. Cobwebs cover the corners.","entities":[]}},
+                {"id":"1,0","gx":1,"gy":0,"meta":{"description":"Old armory. A fearsome goblin guards a locked chest!","entities":["treasure_goblin"],"hasChest":true,"chestGuardian":"treasure_goblin","chestRequiresKey":"goblin_key","chestContents":["golden_chalice","ruby_gem","ancient_coin"]}},
+                {"id":"2,0","gx":2,"gy":0,"meta":{"description":"Guard post. A friendly guard stands watch.","entities":["guard"],"conversationId":"guard_chat","conversationRepeatable":true,
+                    "conversationState": {"nodes": [
+                        {"id":"0,0","gx":0,"gy":0,"parentId":null,"meta":{"label":"That goblin has been causing trouble for weeks!"}},
+                        {"id":"1,0","gx":1,"gy":0,"parentId":"0,0","meta":{"label":"What do you know about it?"}},
+                        {"id":"2,0","gx":2,"gy":0,"parentId":"1,0","meta":{"label":"I saw it carrying a key around its neck. Defeat it and the treasure is yours!"}}
+                    ], "selected": "0,0" } }}
+            ],
+            "selected": "0,0",
+            "globalMeta": {
+                "gameName": "The Goblin\'s Treasure",
+                "gameDescription": "A complete adventure - find a sword, defeat the goblin, get the key, and claim the treasure!",
+                "tags": ["adventure","combat","quest","complete"],
+                "entities": [
+                    {"id":"village_elder","type":"person","name":"Village Elder","hostile":false},
+                    {"id":"blacksmith","type":"person","name":"Blacksmith","hostile":false},
+                    {"id":"treasure_goblin","type":"monster","name":"Treasure Goblin","hostile":true},
+                    {"id":"guard","type":"person","name":"Village Guard","hostile":false}
+                ],
+                "items": [
+                    {"id":"iron_sword","name":"Iron Sword","description":"A sturdy blade perfect for fighting goblins"},
+                    {"id":"goblin_key","name":"Goblin Key","description":"A rusty key taken from the defeated goblin"},
+                    {"id":"golden_chalice","name":"Golden Chalice","description":"An ornate golden cup worth a fortune"},
+                    {"id":"ruby_gem","name":"Ruby Gem","description":"A large red gemstone that sparkles brilliantly"},
+                    {"id":"ancient_coin","name":"Ancient Coin","description":"A rare coin from a forgotten era"}
                 ]
             }
         }', TRUE);
