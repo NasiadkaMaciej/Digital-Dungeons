@@ -204,6 +204,19 @@
         if ('isStart' in m) out.isStart = !!m.isStart; // starting room flag
         if ('conversationRepeatable' in m) out.conversationRepeatable = !!m.conversationRepeatable; // allow replay/shop reuse
 
+        // Chest configuration
+        if ('chestGuardian' in m) out.chestGuardian = m.chestGuardian ? String(m.chestGuardian) : null;
+        if ('chestRequiresKey' in m) out.chestRequiresKey = m.chestRequiresKey ? String(m.chestRequiresKey) : null;
+        if ('chestContents' in m && Array.isArray(m.chestContents)) {
+            out.chestContents = m.chestContents.map(c => String(c)).filter(Boolean);
+        }
+
+        // Room items (array of item IDs)
+        if ('items' in m && Array.isArray(m.items)) {
+            out.items = m.items.map(i => String(i)).filter(Boolean);
+            if (out.items.length === 0) delete out.items;
+        }
+
         // Support both single entity (old) and entities array (new)
         // Entities are now stored as array of entity IDs (strings)
         if ('entities' in m && Array.isArray(m.entities)) {
@@ -223,6 +236,7 @@
         }
 
         if ('conversationId' in m) out.conversationId = (m.conversationId == null ? null : String(m.conversationId));
+        if ('conversationState' in m && m.conversationState) out.conversationState = m.conversationState;
         if ('notes' in m) out.notes = String(m.notes);
         return Object.keys(out).length ? out : undefined;
     }
@@ -248,7 +262,10 @@
                 return {
                     id: String(e.id || ''),
                     type: et,
-                    name: String(e.name || '')
+                    name: String(e.name || ''),
+                    description: String(e.description || ''),
+                    hostile: !!e.hostile,
+                    drops: Array.isArray(e.drops) ? e.drops : []
                 };
             }).filter(e => e && e.id);
         }

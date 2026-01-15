@@ -46,6 +46,11 @@ export default function ConversationCanvas({ onActiveChange, gameId }) {
 		window.__convActive = active;
 		// expose room context setter
 		window.__setConvRoomContext = (ctx) => setRoomContext(ctx);
+		// expose conversation editor opener
+		window.__openConversationEditor = (conversationId, roomId) => {
+			setRoomContext({ conversationId, roomId, isRepeatable: false });
+			setActive(true);
+		};
 		// notify parent of active state change
 		if (onActiveChange) onActiveChange(active);
 
@@ -67,6 +72,7 @@ export default function ConversationCanvas({ onActiveChange, gameId }) {
 			// on unmount, release the lock if we owned it
 			if (window.__convActive) window.__convActive = false;
 			delete window.__setConvRoomContext;
+			delete window.__openConversationEditor;
 		};
 	}, [active, onActiveChange]);
 

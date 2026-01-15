@@ -30,6 +30,7 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 	const [convDraft, setConvDraft] = useState('');
 	const [hasChest, setHasChest] = useState(false);
 	const [entities, setEntities] = useState([]);
+	const [roomItems, setRoomItems] = useState([]);
 	const [lastSyncedRoomId, setLastSyncedRoomId] = useState(null);
 
 	// ----- Global Meta Draft State -----
@@ -53,6 +54,12 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 				setEntities(selectedRoom.meta.entities);
 			} else {
 				setEntities([]);
+			}
+			// Sync room items
+			if (selectedRoom?.meta?.items && Array.isArray(selectedRoom.meta.items)) {
+				setRoomItems(selectedRoom.meta.items);
+			} else {
+				setRoomItems([]);
 			}
 			setLastSyncedRoomId(effectiveSelectionId);
 		}
@@ -179,7 +186,7 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 						</form>
 					</AccordionSection>
 					<AccordionSection title="Entity Registry">
-						<EntityManager entitiesDraft={entitiesDraft} setEntitiesDraft={setEntitiesDraft} setGlobalDirty={setGlobalDirty} rooms={rooms} />
+						<EntityManager entitiesDraft={entitiesDraft} setEntitiesDraft={setEntitiesDraft} setGlobalDirty={setGlobalDirty} rooms={rooms} itemsDraft={itemsDraft} />
 					</AccordionSection>
 					<AccordionSection title="Item Registry">
 						<ItemsManager itemsDraft={itemsDraft} setItemsDraft={setItemsDraft} setGlobalDirty={setGlobalDirty} />
@@ -207,98 +214,121 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 							)}
 						</div>
 					</div>
-					<div className="space-y-2">
-						<label className="block text-sm font-medium">Description</label>
-						<textarea
-							className="w-full px-3 py-2 bg-foreground/5 border border-foreground/10 rounded resize-none text-sm"
-							rows={4}
-							value={descDraft}
-							onChange={(e) => setDescDraft(e.target.value)}
-						/>
-						<div className="flex items-center justify-between">
-							<p className="text-xs text-foreground/50">Write a narrative or purpose for this room.</p>
-							<button
-								disabled={!selectedRoom || (selectedRoom?.meta?.description ?? '') === descDraft}
-								onClick={() => {
-									if (!selectedRoom) return;
-									window.__editorSetRoomMeta?.(selectedRoom.id, (meta) => ({
-										...meta,
-										description: descDraft,
-									}));
-								}}
-								className="px-2 py-1 text-xs font-medium rounded border border-foreground/20 disabled:opacity-40 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-700"
-							>Save</button>
-						</div>
-					</div>
-					<div className="space-y-2">
-						<label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
-							<input
-								type="checkbox"
-								checked={hasChest}
-								onChange={(e) => {
-									const checked = e.target.checked;
-									setHasChest(checked);
-									if (!selectedRoom) return;
-									window.__editorSetRoomMeta?.(selectedRoom.id, (meta) => ({
-										...meta,
-										hasChest: checked,
-									}));
-								}}
-								className="w-4 h-4 rounded"
-							/>
-							<span>Has Chest</span>
-						</label>
-						<p className="text-xs text-foreground/50">Toggle whether this room contains a treasure chest.</p>
-					</div>
-					<RoomEntityPicker
-						entities={entities}
-						setEntities={setEntities}
-						selectedRoom={selectedRoom}
-						globalEntities={entitiesDraft}
-					/>
-					<div className="space-y-2">
-						<label className="block text-sm font-medium">Conversation</label>
+					<AccordionSection title="Room Info" defaultOpen>
 						<div className="space-y-2">
-							<div className="flex items-center justify-between">
-								<span className="text-sm text-foreground/60">ID: {selectedRoom?.meta?.conversationId ?? 'none'}</span>
-								<button
-									onClick={openConversationEditor}
-									className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 rounded text-sm font-medium"
-								>Open Editor</button>
-							</div>
-							<input
-								type="text"
-								className="w-full px-3 py-2 bg-foreground/5 border border-foreground/10 rounded text-sm"
-								placeholder="conversation id"
-								value={convDraft}
-								onChange={(e) => setConvDraft(e.target.value)}
-								onBlur={() => {
-									if (!selectedRoom) return;
-									window.__editorSetRoomMeta?.(selectedRoom.id, (meta) => ({
-										...meta,
-										conversationId: convDraft || null,
-									}));
-								}}
+							<label className="block text-sm font-medium">Description</label>
+							<textarea
+								className="w-full px-3 py-2 bg-foreground/5 border border-foreground/10 rounded resize-none text-sm"
+								rows={4}
+								value={descDraft}
+								onChange={(e) => setDescDraft(e.target.value)}
 							/>
-							<label className="flex items-center gap-2 text-xs font-medium cursor-pointer select-none">
-								<input
-									type="checkbox"
-									checked={!!selectedRoom?.meta?.conversationRepeatable}
-									onChange={(e) => {
-										const checked = e.target.checked;
+							<div className="flex items-center justify-between">
+								<p className="text-xs text-foreground/50">Write a narrative or purpose for this room.</p>
+								<button
+									disabled={!selectedRoom || (selectedRoom?.meta?.description ?? '') === descDraft}
+									onClick={() => {
 										if (!selectedRoom) return;
 										window.__editorSetRoomMeta?.(selectedRoom.id, (meta) => ({
 											...meta,
-											conversationRepeatable: checked,
+											description: descDraft,
+										}));
+									}}
+									className="px-2 py-1 text-xs font-medium rounded border border-foreground/20 disabled:opacity-40 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-700"
+								>Save</button>
+							</div>
+						</div>
+					</AccordionSection>
+					<AccordionSection title="Chest">
+						<div className="space-y-2">
+							<label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+								<input
+									type="checkbox"
+									checked={hasChest}
+									onChange={(e) => {
+										const checked = e.target.checked;
+										setHasChest(checked);
+										if (!selectedRoom) return;
+										window.__editorSetRoomMeta?.(selectedRoom.id, (meta) => ({
+											...meta,
+											hasChest: checked,
 										}));
 									}}
 									className="w-4 h-4 rounded"
 								/>
-								<span>Repeatable conversation</span>
+								<span>Has Chest</span>
 							</label>
-							<p className="text-xs text-foreground/50">Set the conversation id and open the editor to edit content.</p>
+							<p className="text-xs text-foreground/50">Toggle whether this room contains a treasure chest.</p>
+							{hasChest && (
+								<ChestConfig
+									selectedRoom={selectedRoom}
+									globalEntities={entitiesDraft}
+									globalItems={itemsDraft}
+								/>
+							)}
 						</div>
-					</div>
+					</AccordionSection>
+					<AccordionSection title="Entities">
+						<RoomEntityPicker
+							entities={entities}
+							setEntities={setEntities}
+							selectedRoom={selectedRoom}
+							globalEntities={entitiesDraft}
+						/>
+					</AccordionSection>
+					<AccordionSection title="Items">
+						<RoomItemsPicker
+							items={roomItems}
+							setItems={setRoomItems}
+							selectedRoom={selectedRoom}
+							globalItems={itemsDraft}
+						/>
+					</AccordionSection>
+					<AccordionSection title="Conversation">
+						<div className="space-y-2">
+							<label className="block text-sm font-medium">Conversation</label>
+							<div className="space-y-2">
+								<div className="flex items-center justify-between">
+									<span className="text-sm text-foreground/60">ID: {selectedRoom?.meta?.conversationId ?? 'none'}</span>
+									<button
+										onClick={openConversationEditor}
+										className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 rounded text-sm font-medium"
+									>Open Editor</button>
+								</div>
+								<input
+									type="text"
+									className="w-full px-3 py-2 bg-foreground/5 border border-foreground/10 rounded text-sm"
+									placeholder="conversation id"
+									value={convDraft}
+									onChange={(e) => setConvDraft(e.target.value)}
+									onBlur={() => {
+										if (!selectedRoom) return;
+										window.__editorSetRoomMeta?.(selectedRoom.id, (meta) => ({
+											...meta,
+											conversationId: convDraft || null,
+										}));
+									}}
+								/>
+								<label className="flex items-center gap-2 text-xs font-medium cursor-pointer select-none">
+									<input
+										type="checkbox"
+										checked={!!selectedRoom?.meta?.conversationRepeatable}
+										onChange={(e) => {
+											const checked = e.target.checked;
+											if (!selectedRoom) return;
+											window.__editorSetRoomMeta?.(selectedRoom.id, (meta) => ({
+												...meta,
+												conversationRepeatable: checked,
+											}));
+										}}
+										className="w-4 h-4 rounded"
+									/>
+									<span>Repeatable conversation</span>
+								</label>
+								<p className="text-xs text-foreground/50">Set the conversation id and open the editor to edit content.</p>
+							</div>
+						</div>
+					</AccordionSection>
 				</div>
 			)}
 			{/* Bottom clean metadata button removed; use QuickActions at top */}
@@ -406,10 +436,13 @@ function ActionBar({ onSave, onLoad, onNew, globalDirty, commitGlobalMeta, gameN
 const inputClass = "w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500";
 const buttonClass = "px-3 py-1.5 rounded text-xs font-semibold";
 
-function EntityManager({ entitiesDraft, setEntitiesDraft, setGlobalDirty, rooms }) {
+function EntityManager({ entitiesDraft, setEntitiesDraft, setGlobalDirty, rooms, itemsDraft }) {
 	const [newEntityId, setNewEntityId] = useState('');
 	const [newEntityName, setNewEntityName] = useState('');
 	const [newEntityType, setNewEntityType] = useState('monster');
+	const [newEntityDesc, setNewEntityDesc] = useState('');
+	const [newEntityHostile, setNewEntityHostile] = useState(false);
+	const [newEntityDrops, setNewEntityDrops] = useState([]);
 
 	function addEntity(e) {
 		e.preventDefault();
@@ -420,12 +453,22 @@ function EntityManager({ entitiesDraft, setEntitiesDraft, setGlobalDirty, rooms 
 			alert('Entity ID already exists!');
 			return;
 		}
-		const next = [...entitiesDraft, { id, name, type: newEntityType }];
+		const next = [...entitiesDraft, {
+			id,
+			name,
+			type: newEntityType,
+			description: newEntityDesc.trim(),
+			hostile: newEntityHostile,
+			drops: newEntityDrops
+		}];
 		setEntitiesDraft(next);
 		setGlobalDirty(true);
 		setNewEntityId('');
 		setNewEntityName('');
 		setNewEntityType('monster');
+		setNewEntityDesc('');
+		setNewEntityHostile(false);
+		setNewEntityDrops([]);
 	}
 
 	function removeEntity(entityId) {
@@ -447,27 +490,69 @@ function EntityManager({ entitiesDraft, setEntitiesDraft, setGlobalDirty, rooms 
 		setGlobalDirty(true);
 	}
 
+	const inputClass = "w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500";
+	const buttonClass = "px-3 py-1.5 rounded text-xs font-semibold";
+
 	return (
 		<div className="space-y-2">
 			<span className="text-xs uppercase tracking-wide text-foreground/50">Entity Registry</span>
 			<form onSubmit={addEntity} className="space-y-2">
-				<input className={inputClass} value={newEntityId} onChange={e => setNewEntityId(e.target.value)} placeholder="Entity ID (e.g. slime1)" />
-				<input className={inputClass} value={newEntityName} onChange={e => setNewEntityName(e.target.value)} placeholder="Display name (e.g. Green Slime)" />
-				<div className="flex gap-2">
-					<select className={inputClass + " flex-1"} value={newEntityType} onChange={e => setNewEntityType(e.target.value)}>
-						<option value="monster">Monster</option>
-						<option value="boss">Boss</option>
-						<option value="person">Person (NPC)</option>
-					</select>
-					<button type="submit" className={buttonClass + " bg-indigo-600 hover:bg-indigo-500"}>Add</button>
-				</div>
+				<input className={inputClass} value={newEntityId} onChange={e => setNewEntityId(e.target.value)} placeholder="Entity ID (e.g. goblin)" />
+				<input className={inputClass} value={newEntityName} onChange={e => setNewEntityName(e.target.value)} placeholder="Display name (e.g. Goblin Guard)" />
+				<input className={inputClass} value={newEntityDesc} onChange={e => setNewEntityDesc(e.target.value)} placeholder="Description (optional)" />
+				<select className={inputClass} value={newEntityType} onChange={e => setNewEntityType(e.target.value)}>
+					<option value="monster">Monster</option>
+					<option value="boss">Boss</option>
+					<option value="person">Person (NPC)</option>
+				</select>
+				<label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+					<input
+						type="checkbox"
+						checked={newEntityHostile}
+						onChange={(e) => setNewEntityHostile(e.target.checked)}
+						className="w-4 h-4 rounded"
+					/>
+					<span>Hostile (can be attacked)</span>
+				</label>
+				{newEntityHostile && (
+					<div className="space-y-1 pl-4 border-l-2 border-foreground/10">
+						<label className="block text-[11px] text-foreground/60">Drops (when defeated)</label>
+						<div className="flex flex-wrap gap-1">
+							{itemsDraft.map(item => {
+								const active = newEntityDrops.includes(item.id);
+								return (
+									<button
+										key={item.id}
+										type="button"
+										onClick={() => {
+											const next = active ? newEntityDrops.filter(d => d !== item.id) : [...newEntityDrops, item.id];
+											setNewEntityDrops(next);
+										}}
+										className={`px-2 py-1 rounded text-[11px] border ${active ? 'bg-orange-600 border-orange-500' : 'bg-foreground/5 border-foreground/15'}`}
+									>
+										{item.name}
+									</button>
+								);
+							})}
+							{itemsDraft.length === 0 && <span className="text-[11px] text-foreground/40">Define items first.</span>}
+						</div>
+					</div>
+				)}
+				<button type="submit" className={buttonClass + " w-full bg-indigo-600 hover:bg-indigo-500"}>Add Entity</button>
 			</form>
 			<div className="space-y-1 max-h-40 overflow-y-auto">
 				{entitiesDraft.map(entity => (
 					<div key={entity.id} className="flex items-center justify-between p-2 bg-foreground/5 border border-foreground/10 rounded text-xs">
 						<div className="flex-1 min-w-0">
-							<div className="font-medium truncate">{entity.name}</div>
-							<div className="text-foreground/50 text-[10px]">{entity.id} • {entity.type}</div>
+							<div className="font-medium truncate flex items-center gap-1">
+								{entity.name}
+								{entity.hostile && <span className="text-[9px] px-1 py-0.5 bg-red-600 rounded">HOSTILE</span>}
+							</div>
+							<div className="text-foreground/50 text-[10px] truncate">
+								{entity.id} • {entity.type}
+								{entity.description ? ` • ${entity.description}` : ''}
+								{entity.hostile && entity.drops?.length > 0 && ` • Drops: ${entity.drops.length}`}
+							</div>
 						</div>
 						<button onClick={() => removeEntity(entity.id)} className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]">Del</button>
 					</div>
@@ -479,84 +564,37 @@ function EntityManager({ entitiesDraft, setEntitiesDraft, setGlobalDirty, rooms 
 }
 
 function RoomEntityPicker({ entities, setEntities, selectedRoom, globalEntities }) {
-	const [showPicker, setShowPicker] = useState(false);
+	const updateMeta = (updater) => {
+		if (!selectedRoom) return;
+		window.__editorSetRoomMeta?.(selectedRoom.id, updater);
+	};
 
-	function addEntityToRoom(entityId) {
-		if (entities.includes(entityId)) return;
-		const next = [...entities, entityId];
+	const toggleEntity = (entityId) => {
+		const active = entities.includes(entityId);
+		const next = active ? entities.filter(id => id !== entityId) : [...entities, entityId];
 		setEntities(next);
-		if (selectedRoom) {
-			window.__editorSetRoomMeta?.(selectedRoom.id, meta => ({ ...meta, entities: next }));
-		}
-	}
-
-	function removeEntityFromRoom(entityId) {
-		const next = entities.filter(id => id !== entityId);
-		setEntities(next);
-		if (selectedRoom) {
-			window.__editorSetRoomMeta?.(selectedRoom.id, meta => ({ ...meta, entities: next }));
-		}
-	}
+		updateMeta(meta => ({ ...meta, entities: next }));
+	};
 
 	return (
 		<div className="space-y-2">
-			<div className="flex items-center justify-between">
-				<label className="block text-sm font-medium">Entities in Room</label>
-				<button
-					onClick={() => setShowPicker(!showPicker)}
-					className="px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs font-medium"
-				>
-					{showPicker ? 'Close' : '+ Add Entity'}
-				</button>
-			</div>
-			{showPicker && (
-				<div className="p-2 bg-foreground/5 border border-foreground/10 rounded space-y-1 max-h-32 overflow-y-auto">
-					{globalEntities.filter(e => !entities.includes(e.id)).map(entity => (
+			<p className="text-xs text-foreground/50">Select entities present in this room.</p>
+			<div className="flex flex-wrap gap-1">
+				{globalEntities.map(entity => {
+					const active = entities.includes(entity.id);
+					return (
 						<button
 							key={entity.id}
-							onClick={() => {
-								addEntityToRoom(entity.id);
-								setShowPicker(false);
-							}}
-							className="w-full text-left px-2 py-1.5 bg-background hover:bg-foreground/10 rounded text-xs flex justify-between items-center"
+							type="button"
+							onClick={() => toggleEntity(entity.id)}
+							className={`px-2 py-1 rounded text-[11px] border ${active ? 'bg-blue-600 border-blue-500' : 'bg-foreground/5 border-foreground/15'}`}
 						>
-							<span>{entity.name}</span>
-							<span className="text-foreground/50 text-[10px]">{entity.type}</span>
+							{entity.name}
 						</button>
-					))}
-					{globalEntities.filter(e => !entities.includes(e.id)).length === 0 && (
-						<p className="text-xs text-foreground/40 py-2">All entities already added or none available.</p>
-					)}
-				</div>
-			)}
-			{entities.length === 0 ? (
-				<p className="text-sm text-foreground/60">No entities in this room.</p>
-			) : (
-				<div className="space-y-1">
-					{entities.map(entityId => {
-						const entity = globalEntities.find(e => e.id === entityId);
-						return (
-							<div key={entityId} className="flex items-center justify-between p-2 bg-foreground/5 border border-foreground/10 rounded text-xs">
-								<div className="flex-1">
-									{entity ? (
-										<>
-											<div className="font-medium">{entity.name}</div>
-											<div className="text-foreground/50 text-[10px]">{entity.type}</div>
-										</>
-									) : (
-										<div className="text-red-400">Unknown: {entityId}</div>
-									)}
-								</div>
-								<button
-									onClick={() => removeEntityFromRoom(entityId)}
-									className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]"
-								>Remove</button>
-							</div>
-						);
-					})}
-				</div>
-			)}
-			<p className="text-xs text-foreground/50">Add entities from the global registry to this room.</p>
+					);
+				})}
+				{globalEntities.length === 0 && <span className="text-[11px] text-foreground/40">Define entities in global registry first.</span>}
+			</div>
 		</div>
 	);
 }
@@ -607,6 +645,123 @@ function ItemsManager({ itemsDraft, setItemsDraft, setGlobalDirty }) {
 					</div>
 				))}
 				{itemsDraft.length === 0 && <p className="text-xs text-foreground/40">No items defined yet.</p>}
+			</div>
+		</div>
+	);
+}
+function ChestConfig({ selectedRoom, globalEntities, globalItems }) {
+	const [guardian, setGuardian] = useState(selectedRoom?.meta?.chestGuardian || '');
+	const [requiresKey, setRequiresKey] = useState(selectedRoom?.meta?.chestRequiresKey || '');
+	const [contents, setContents] = useState(selectedRoom?.meta?.chestContents || []);
+
+	useEffect(() => {
+		setGuardian(selectedRoom?.meta?.chestGuardian || '');
+		setRequiresKey(selectedRoom?.meta?.chestRequiresKey || '');
+		setContents(selectedRoom?.meta?.chestContents || []);
+	}, [selectedRoom]);
+
+	const updateMeta = (updater) => {
+		if (!selectedRoom) return;
+		window.__editorSetRoomMeta?.(selectedRoom.id, updater);
+	};
+
+	const inputClass = "w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500";
+
+	return (
+		<div className="space-y-2 pl-4 border-l-2 border-foreground/10">
+			<div className="space-y-1 text-xs text-foreground/60">
+				<label className="block text-[11px] text-foreground/60">Guardian Entity</label>
+				<select
+					className={inputClass}
+					value={guardian}
+					onChange={(e) => {
+						const val = e.target.value || null;
+						setGuardian(val || '');
+						updateMeta(meta => ({ ...meta, chestGuardian: val }));
+					}}
+				>
+					<option value="">None</option>
+					{globalEntities.map(ent => (
+						<option key={ent.id} value={ent.id}>{ent.name}</option>
+					))}
+				</select>
+			</div>
+			<div className="space-y-1 text-xs text-foreground/60">
+				<label className="block text-[11px] text-foreground/60">Requires Key</label>
+				<select
+					className={inputClass}
+					value={requiresKey}
+					onChange={(e) => {
+						const val = e.target.value || null;
+						setRequiresKey(val || '');
+						updateMeta(meta => ({ ...meta, chestRequiresKey: val }));
+					}}
+				>
+					<option value="">None</option>
+					{globalItems.map(item => (
+						<option key={item.id} value={item.id}>{item.name}</option>
+					))}
+				</select>
+			</div>
+			<div className="space-y-1 text-xs text-foreground/60">
+				<label className="block text-[11px] text-foreground/60">Chest Contents</label>
+				<div className="flex flex-wrap gap-1">
+					{globalItems.map(item => {
+						const active = contents.includes(item.id);
+						return (
+							<button
+								key={item.id}
+								type="button"
+								onClick={() => {
+									const next = active ? contents.filter(c => c !== item.id) : [...contents, item.id];
+									setContents(next);
+									updateMeta(meta => ({ ...meta, chestContents: next }));
+								}}
+								className={`px-2 py-1 rounded text-[11px] border ${active ? 'bg-orange-600 border-orange-500' : 'bg-foreground/5 border-foreground/15'}`}
+							>
+								{item.name}
+							</button>
+						);
+					})}
+					{globalItems.length === 0 && <span className="text-[11px] text-foreground/40">Define items first.</span>}
+				</div>
+				<p className="text-[11px] text-foreground/50">Guardian and key are optional; contents are placed in the room when opened.</p>
+			</div>
+		</div>
+	);
+}
+
+function RoomItemsPicker({ items, setItems, selectedRoom, globalItems }) {
+	const updateMeta = (updater) => {
+		if (!selectedRoom) return;
+		window.__editorSetRoomMeta?.(selectedRoom.id, updater);
+	};
+
+	const toggleItem = (itemId) => {
+		const active = items.includes(itemId);
+		const next = active ? items.filter(i => i !== itemId) : [...items, itemId];
+		setItems(next);
+		updateMeta(meta => ({ ...meta, items: next }));
+	};
+
+	return (
+		<div className="space-y-2">
+			<p className="text-xs text-foreground/50">Select items initially present in this room.</p>
+			<div className="flex flex-wrap gap-1">
+				{globalItems.map(item => {
+					const active = items.includes(item.id);
+					return (
+						<button
+							key={item.id}
+							type="button"
+							onClick={() => toggleItem(item.id)}
+							className={`px-2 py-1 rounded text-[11px] border ${active ? 'bg-blue-600 border-blue-500' : 'bg-foreground/5 border-foreground/15'}`}
+						>
+							{item.name}
+						</button>
+					);
+				})}
+				{globalItems.length === 0 && <span className="text-[11px] text-foreground/40">Define items in global registry first.</span>}
 			</div>
 		</div>
 	);

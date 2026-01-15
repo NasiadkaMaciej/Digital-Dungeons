@@ -120,7 +120,10 @@ export const sketchFactory = (p) => {
 						entities: Array.isArray(next.entities) ? next.entities.map(e => ({
 							id: String(e.id || ''),
 							type: String(e.type || 'monster'),
-							name: String(e.name || '')
+							name: String(e.name || ''),
+							description: String(e.description || ''),
+							hostile: !!e.hostile,
+							drops: Array.isArray(e.drops) ? e.drops : []
 						})).filter(e => e.id) : [],
 						items: Array.isArray(next.items) ? next.items.map(i => ({
 							id: String(i.id || ''),
