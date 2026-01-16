@@ -7,6 +7,7 @@ const gamesRoutes = require('./routes/games');
 const usersRoutes = require('./routes/users');
 const likesRoutes = require('./routes/likes');
 const commentsRoutes = require('./routes/comments');
+const playthroughsRoutes = require('./routes/playthroughs');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -26,6 +27,7 @@ app.use('/api/games', gamesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/likes', likesRoutes);
 app.use('/api/comments', commentsRoutes);
+app.use('/api/playthroughs', playthroughsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

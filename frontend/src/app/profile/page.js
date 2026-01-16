@@ -271,16 +271,22 @@ Draft
 </span>
 </div>
 </div>
-<div className="flex gap-2">
+<div className="flex gap-2 flex-wrap">
+<Link
+href={`/game/${game.game_id}`}
+className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-background rounded text-sm font-medium transition-colors"
+>
+View
+</Link>
 <Link
 href={`/editor?gameId=${game.game_id}`}
-className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors"
+className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-background rounded text-sm font-medium transition-colors"
 >
 Edit
 </Link>
 <button
 onClick={() => handleTogglePublish(game.game_id, game.is_published)}
-className={`px-3 py-1 rounded text-sm transition-colors ${game.is_published
+className={`px-4 py-2 rounded text-sm font-medium transition-colors text-background ${game.is_published
 ? 'bg-yellow-600 hover:bg-yellow-700'
 : 'bg-green-600 hover:bg-green-700'
 }`}
@@ -289,7 +295,7 @@ className={`px-3 py-1 rounded text-sm transition-colors ${game.is_published
 </button>
 <button
 onClick={() => handleDeleteGame(game.game_id)}
-className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
+className="px-4 py-2 bg-red-600 hover:bg-red-700 text-background rounded text-sm font-medium transition-colors"
 >
 Delete
 </button>
@@ -364,18 +370,18 @@ className="inline-block px-2 py-1 bg-red-500/20 text-red-500 rounded text-xs fon
 </span>
 </div>
 </div>
-<div className="flex gap-2">
+<div className="flex gap-2 flex-wrap">
 <Link
 href={`/game/${game.game_id}`}
-className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors"
+className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-background rounded text-sm font-medium transition-colors"
 >
 View
 </Link>
 <button
 onClick={() => handleUnlikeLikedGame(game.game_id)}
-className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
+className="px-4 py-2 bg-red-600 hover:bg-red-700 text-background rounded text-sm font-medium transition-colors"
 >
-Unlike
+Dislike
 </button>
 </div>
 </div>

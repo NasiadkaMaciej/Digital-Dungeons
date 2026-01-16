@@ -156,4 +156,24 @@ export const commentsApi = {
 	deleteComment: (commentId) => apiRequest(`/comments/${commentId}`, { method: 'DELETE' }),
 };
 
+// Playthroughs API
+export const playthroughsApi = {
+	getUserPlaythroughs: (limit = 20, offset = 0) =>
+		apiRequest(`/playthroughs/user?limit=${limit}&offset=${offset}`),
+	getStats: () => apiRequest('/playthroughs/stats'),
+	getById: (id) => apiRequest(`/playthroughs/${id}`),
+	getByGame: (gameId) => apiRequest(`/playthroughs/by-game/${gameId}`),
+	start: (gameId, gameState) => apiRequest('/playthroughs', {
+		method: 'POST',
+		body: JSON.stringify({ gameId, gameState }),
+	}),
+	update: (id, { gameState, status }) => apiRequest(`/playthroughs/${id}`, {
+		method: 'PUT',
+		body: JSON.stringify({ gameState, status }),
+	}),
+	delete: (id) => apiRequest(`/playthroughs/${id}`, { method: 'DELETE' }),
+	continue: (gameId) => apiRequest(`/playthroughs/continue/${gameId}`, { method: 'POST' }),
+	reset: (gameId) => apiRequest(`/playthroughs/reset/${gameId}`, { method: 'POST' }),
+};
+
 export { ApiError };

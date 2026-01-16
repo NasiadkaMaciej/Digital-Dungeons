@@ -22,7 +22,7 @@ import {
 	handleConversationChoice
 } from '@/lib/game/conversationSystem';
 
-export default function GameConsole({ initialData }) {
+export default function GameConsole({ initialData, initialState = null, onSave = null, exitTo = '/' }) {
 	const router = useRouter();
 
 	// ===== GAME DATA =====
@@ -31,9 +31,9 @@ export default function GameConsole({ initialData }) {
 	const startingRoomId = initialData?.selected || (rooms.length > 0 ? rooms[0].id : null);
 
 	// ===== STATE =====
-	const [currentRoomId, setCurrentRoomId] = useState(startingRoomId);
-	const [inventory, setInventory] = useState([]);
-	const [roomStates, setRoomStates] = useState({});
+	const [currentRoomId, setCurrentRoomId] = useState(initialState?.currentRoomId ?? startingRoomId);
+	const [inventory, setInventory] = useState(initialState?.inventory ?? []);
+	const [roomStates, setRoomStates] = useState(initialState?.roomStates ?? {});
 	const [log, setLog] = useState([]);
 	const [input, setInput] = useState('');
 
@@ -57,20 +57,28 @@ export default function GameConsole({ initialData }) {
 
 	// ===== INITIALIZATION =====
 	useEffect(() => {
-		// Initialize room states
-		const initialRoomStates = initializeRoomStates(rooms);
+		// Initialize or resume room states
+		const initialRoomStates = initialState?.roomStates ?? initializeRoomStates(rooms);
 		setRoomStates(initialRoomStates);
 
-		// Show welcome message
-		const room = findRoomById(rooms, startingRoomId);
+		// Determine starting/current room
+		const effectiveRoomId = initialState?.currentRoomId ?? startingRoomId;
+		setCurrentRoomId(effectiveRoomId);
+		// Inventory resume
+		if (initialState?.inventory) {
+			setInventory(initialState.inventory);
+		}
+
+		// Show welcome/resume message
+		const room = findRoomById(rooms, effectiveRoomId);
 		const initialMessages = [
 			'WELCOME TO THE DIGITAL DUNGEONS.',
 			'TYPE HELP FOR AVAILABLE COMMANDS.',
 			'',
-			describeRoom(room, initialRoomStates[startingRoomId] || {}, globalMeta)
+			describeRoom(room, initialRoomStates[effectiveRoomId] || {}, globalMeta)
 		];
 		setLog(initialMessages);
-	}, [rooms, startingRoomId, globalMeta]);
+	}, [rooms, startingRoomId, globalMeta, initialState]);
 
 	// Auto-focus input
 	useEffect(() => {
@@ -103,9 +111,22 @@ export default function GameConsole({ initialData }) {
 	}, []);
 
 	// ===== COMMAND HANDLERS =====
-	const handleExit = useCallback(() => {
-		router.push('/');
-	}, [router]);
+	const handleExit = useCallback(async () => {
+		// Snapshot state before leaving so progress can persist
+		const snapshot = {
+			currentRoomId,
+			inventory,
+			roomStates,
+		};
+		try {
+			if (typeof onSave === 'function') {
+				await onSave(snapshot);
+			}
+		} catch (e) {
+			// Non-blocking
+		}
+		router.push(exitTo);
+	}, [router, onSave, currentRoomId, inventory, roomStates, exitTo]);
 
 	const handleMove = useCallback((directionKey) => {
 		const room = findRoomById(rooms, currentRoomId);

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
-import { commentsApi, gamesApi, likesApi } from '@/lib/api';
+import { commentsApi, gamesApi, likesApi, playthroughsApi } from '@/lib/api';
 
 export default function GameDetailsPage() {
 	const params = useParams();
@@ -14,6 +14,9 @@ export default function GameDetailsPage() {
 	const [comments, setComments] = useState([]);
 	const [isLiked, setIsLiked] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [hasPlaythrough, setHasPlaythrough] = useState(false);
+	const [resetLoading, setResetLoading] = useState(false);
+	const [resetError, setResetError] = useState('');
 	const [commentText, setCommentText] = useState('');
 	const [submittingComment, setSubmittingComment] = useState(false);
 	const [editingCommentId, setEditingCommentId] = useState(null);
@@ -41,12 +44,36 @@ export default function GameDetailsPage() {
 			if (isAuthenticated) {
 				const likeStatus = await likesApi.checkLike(params.id);
 				setIsLiked(likeStatus.liked);
+				try {
+					await playthroughsApi.getByGame(params.id);
+					setHasPlaythrough(true);
+				} catch (err) {
+					setHasPlaythrough(false);
+				}
 			}
 		} catch (err) {
 			console.error('Failed to load game:', err);
 			// alert('Failed to load game details');
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	const handleResetPlaythrough = async () => {
+		if (!isAuthenticated) {
+			alert('Please log in to reset progress');
+			return;
+		}
+		setResetLoading(true);
+		setResetError('');
+		try {
+			await playthroughsApi.reset(params.id);
+			setHasPlaythrough(true);
+			alert('Playthrough reset. Start again from the beginning.');
+		} catch (err) {
+			setResetError(err?.message || 'Failed to reset playthrough');
+		} finally {
+			setResetLoading(false);
 		}
 	};
 
@@ -70,6 +97,8 @@ export default function GameDetailsPage() {
 			alert('Failed to update like: ' + err.message);
 		}
 	};
+
+	const playCtaLabel = hasPlaythrough ? 'Resume / Play' : 'Play';
 
 	const handleSubmitComment = async (e) => {
 		e.preventDefault();
@@ -215,16 +244,30 @@ export default function GameDetailsPage() {
 							<span className="font-medium">{game.plays_count || 0} plays</span>
 						</span>
 					</div>
-					<Link
-						href={`/play?id=${game.game_id}`}
-						className="inline-flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-700 rounded-md font-medium text-background"
-					>
-						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-						</svg>
-						Play Game
-					</Link>
+					<div className="flex items-center gap-3">
+						<Link
+							href={`/play?id=${game.game_id}`}
+							className="inline-flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-700 rounded-md font-medium text-background"
+						>
+							<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+							{playCtaLabel}
+						</Link>
+						{hasPlaythrough && (
+							<button
+								onClick={handleResetPlaythrough}
+								disabled={resetLoading}
+								className="inline-flex items-center gap-2 px-4 py-3 border border-foreground/20 hover:border-red-500 rounded-md font-medium text-foreground disabled:opacity-60 disabled:cursor-not-allowed"
+							>
+								{resetLoading ? 'Resetting...' : 'Reset Progress'}
+							</button>
+						)}
+					</div>
+					{resetError && (
+						<p className="text-sm text-red-500 mt-2 text-right w-full">{resetError}</p>
+					)}
 				</div>
 			</div>
 
