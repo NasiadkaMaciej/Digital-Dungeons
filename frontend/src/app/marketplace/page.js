@@ -14,16 +14,28 @@ export default function MarketplacePage() {
 	const [loading, setLoading] = useState(true);
 	const [likedGames, setLikedGames] = useState(new Set());
 	const [search, setSearch] = useState("");
+	const [selectedTags, setSelectedTags] = useState(new Set());
+	const [availableTags, setAvailableTags] = useState([]);
 
 	useEffect(() => {
 		loadGames();
-	}, []);
+	}, [selectedTags]);
 
 	const loadGames = async () => {
 		setLoading(true);
 		try {
-			const publishedGames = await gamesApi.getAllGames();
+			const tagsParam = selectedTags.size > 0 ? Array.from(selectedTags).join(',') : '';
+			const publishedGames = await gamesApi.getAllGames(tagsParam ? `?tags=${tagsParam}` : '');
 			setGames(publishedGames);
+
+			// Extract all unique tags from games
+			const tags = new Set();
+			publishedGames.forEach((game) => {
+				if (game.tags && Array.isArray(game.tags)) {
+					game.tags.forEach(tag => tags.add(tag));
+				}
+			});
+			setAvailableTags(Array.from(tags).sort());
 
 			// Load liked status for authenticated users
 			if (isAuthenticated) {
@@ -99,6 +111,18 @@ export default function MarketplacePage() {
 			(game.author_name && game.author_name.toLowerCase().includes(search.toLowerCase()))
 	);
 
+	const toggleTag = (tag) => {
+		setSelectedTags((prev) => {
+			const newSet = new Set(prev);
+			if (newSet.has(tag)) {
+				newSet.delete(tag);
+			} else {
+				newSet.add(tag);
+			}
+			return newSet;
+		});
+	};
+
 	return (
 		<div className="space-y-6">
 			<div className="flex justify-between items-center">
@@ -122,6 +146,36 @@ export default function MarketplacePage() {
 				/>
 			</div>
 
+			{/* Tag filter */}
+			{availableTags.length > 0 && (
+				<div className="mb-6">
+					<p className="text-sm text-foreground/60 font-mono mb-3">Filter by tags:</p>
+					<div className="flex flex-wrap gap-2">
+						{availableTags.map((tag) => (
+							<button
+								key={tag}
+								onClick={() => toggleTag(tag)}
+								className={`px-3 py-1 rounded-md text-xs font-mono transition-all ${
+									selectedTags.has(tag)
+										? 'bg-red-500 text-background'
+										: 'bg-background border border-foreground/20 text-foreground/60 hover:border-red-500'
+								}`}
+							>
+								{tag}
+							</button>
+						))}
+						{selectedTags.size > 0 && (
+							<button
+								onClick={() => setSelectedTags(new Set())}
+								className="px-3 py-1 rounded-md text-xs font-mono bg-background border border-foreground/20 text-foreground/60 hover:border-red-500"
+							>
+								Clear filters
+							</button>
+						)}
+					</div>
+				</div>
+			)}
+
 			{filteredGames.length === 0 ? (
 				<div className="text-center py-12 bg-background border-1 border-foreground/5 rounded-lg font-mono">
 					<p className="text-foreground/60">
@@ -143,9 +197,21 @@ export default function MarketplacePage() {
 									by {game.author_name}
 								</p>
 								{game.description && (
-									<p className="text-foreground/80 text-sm mt-3 mb-15 line-clamp-3 font-mono">
+									<p className="text-foreground/80 text-sm mt-3 mb-4 line-clamp-3 font-mono">
 										{game.description}
 									</p>
+								)}
+								{game.tags && game.tags.length > 0 && (
+									<div className="mb-4 flex flex-wrap gap-2">
+										{game.tags.map((tag) => (
+											<span
+												key={tag}
+												className="inline-block px-2 py-1 bg-red-500/20 text-red-500 rounded text-xs font-mono border border-red-500/30"
+											>
+												{tag}
+											</span>
+										))}
+									</div>
 								)}
 							</div>
 

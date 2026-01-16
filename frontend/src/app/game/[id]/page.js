@@ -183,8 +183,18 @@ export default function GameDetailsPage() {
 
 				{game.description && (
 					<p className="text-foreground my-8 font-mono">{game.description}</p>
-				)}
-				<div className="flex justify-between items-center mt-15">
+				)}			{game.tags && game.tags.length > 0 && (
+				<div className="my-6 flex flex-wrap gap-2">
+					{game.tags.map((tag) => (
+						<span
+							key={tag}
+							className="inline-block px-3 py-1 bg-red-500/20 text-red-500 rounded text-sm font-mono border border-red-500/30"
+						>
+							{tag}
+						</span>
+					))}
+				</div>
+			)}				<div className="flex justify-between items-center mt-15">
 					<div className="flex items-center gap-6 text-foreground/60">
 						<button
 							onClick={handleLike}

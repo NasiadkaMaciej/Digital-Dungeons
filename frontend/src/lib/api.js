@@ -118,7 +118,7 @@ const createRestApi = (basePath) => ({
 
 // Games API
 export const gamesApi = {
-	getAllGames: () => apiRequest('/games'),
+	getAllGames: (queryString = '') => apiRequest(`/games${queryString}`),
 	getGameById: (id) => apiRequest(`/games/${id}`),
 	createGame: (gameData) => apiRequest('/games', {
 		method: 'POST',

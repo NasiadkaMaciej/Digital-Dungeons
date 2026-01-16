@@ -28,33 +28,54 @@ class Game {
 		);
 		if (rows[0]) {
 			rows[0].game_content = parseJSON(rows[0].game_content);
+			rows[0].tags = rows[0].game_content?.globalMeta?.tags || [];
 		}
 		return rows[0];
 	}
 
-	static async findAll({ limit = 20, offset = 0, published = true }) {
-		const [rows] = await db.execute(
-			`SELECT g.game_id, g.title, g.description, g.create_date, g.likes_count, g.plays_count,
+	static async findAll({ limit = 20, offset = 0, published = true, tags = [] }) {
+		let query = `SELECT g.game_id, g.title, g.description, g.create_date, g.likes_count, g.plays_count, g.game_content,
               u.username as author_name
        FROM games g
        JOIN users u ON g.author_id = u.user_id
-       WHERE g.is_published = ?
-       ORDER BY g.create_date DESC
-       LIMIT ? OFFSET ?`,
-			[published, limit, offset]
-		);
-		return rows;
+       WHERE g.is_published = ?`;
+
+		const params = [published];
+
+		if (tags.length > 0) {
+			// Build separate JSON_CONTAINS conditions for each tag - ALL tags must be present (AND logic)
+			const tagConditions = [];
+			for (const tag of tags) {
+				tagConditions.push(`JSON_CONTAINS(JSON_EXTRACT(g.game_content, '$.globalMeta.tags'), JSON_QUOTE(?))`);
+				params.push(tag);
+			}
+			query += ` AND ${tagConditions.join(' AND ')}`;
+		}
+
+		query += ` ORDER BY g.create_date DESC LIMIT ? OFFSET ?`;
+		params.push(limit, offset);
+
+		const [rows] = await db.execute(query, params);
+		return rows.map(row => ({
+			...row,
+			game_content: parseJSON(row.game_content),
+			tags: parseJSON(row.game_content)?.globalMeta?.tags || []
+		}));
 	}
 
 	static async findByAuthor(authorId) {
 		const [rows] = await db.execute(
-			`SELECT game_id, title, description, create_date, update_date, is_published, likes_count, plays_count
+			`SELECT game_id, title, description, create_date, update_date, is_published, likes_count, plays_count, game_content
        FROM games
        WHERE author_id = ?
        ORDER BY update_date DESC`,
 			[authorId]
 		);
-		return rows;
+		return rows.map(row => ({
+			...row,
+			game_content: parseJSON(row.game_content),
+			tags: parseJSON(row.game_content)?.globalMeta?.tags || []
+		}));
 	}
 
 	static async update(gameId, { title, description, gameContent, isPublished }) {

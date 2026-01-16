@@ -13,6 +13,7 @@ export default function ProfilePage() {
 	const [localUser, setLocalUser] = useState(null);
 	const [userGames, setUserGames] = useState([]);
 	const [loadingGames, setLoadingGames] = useState(false);
+	const [searchGames, setSearchGames] = useState('');
 
 	// Use localUser if available (after edit), otherwise use user from auth
 	const displayUser = localUser || user;
@@ -98,6 +99,12 @@ export default function ProfilePage() {
 		redirect("/login");
 	}
 
+	// Filter games based on search
+	const filteredGames = userGames.filter(game =>
+		game.title.toLowerCase().includes(searchGames.toLowerCase()) ||
+		(game.description && game.description.toLowerCase().includes(searchGames.toLowerCase()))
+	);
+
 	return (
 		<>
 			<div className="space-y-12">
@@ -156,14 +163,28 @@ export default function ProfilePage() {
 						</Link>
 					</div>
 
-					{loadingGames ? (
-						<p className="text-foreground/60">Loading games...</p>
-					) : userGames.length === 0 ? (
-						<p className="text-foreground/60 font-mono text-sm text-center pt-5 pb-10"><Link href={"/editor"} className={"text-red-500" +
-							" hover:underline hover:text-red-700"}>Create</Link> your first game.</p>
-					) : (
-						<div className="space-y-3">
-							{userGames.map(game => (
+				{userGames.length > 0 && (
+					<div className="mb-6">
+						<input
+							type="text"
+							value={searchGames}
+							onChange={e => setSearchGames(e.target.value)}
+							placeholder="Search your games..."
+							className="w-full px-4 py-2 border border-foreground/20 rounded-md font-mono text-base bg-background focus:outline-none focus:border-red-500"
+						/>
+					</div>
+				)}
+
+				{loadingGames ? (
+					<p className="text-foreground/60">Loading games...</p>
+				) : userGames.length === 0 ? (
+					<p className="text-foreground/60 font-mono text-sm text-center pt-5 pb-10"><Link href={"/editor"} className={"text-red-500" +
+						" hover:underline hover:text-red-700"}>Create</Link> your first game.</p>
+				) : filteredGames.length === 0 ? (
+					<p className="text-foreground/60 font-mono text-sm text-center pt-5 pb-10">No games found matching your search.</p>
+				) : (
+					<div className="space-y-3">
+						{filteredGames.map(game => (
 								<div
 									key={game.game_id}
 									className="flex justify-between items-center p-4 bg-foreground/5 rounded border border-foreground/10"
@@ -172,8 +193,18 @@ export default function ProfilePage() {
 										<h3 className="font-medium">{game.title}</h3>
 										{game.description && (
 											<p className="text-sm text-foreground/60 mt-1">{game.description}</p>
-										)}
-										<div className="flex gap-4 mt-2 text-xs text-foreground/60">
+										)}									{game.tags && game.tags.length > 0 && (
+										<div className="flex flex-wrap gap-2 mt-2 mb-2">
+											{game.tags.map((tag) => (
+												<span
+													key={tag}
+													className="inline-block px-2 py-1 bg-red-500/20 text-red-500 rounded text-xs font-mono border border-red-500/30"
+												>
+													{tag}
+												</span>
+											))}
+										</div>
+									)}										<div className="flex gap-4 mt-2 text-xs text-foreground/60">
 											<span className="flex items-center gap-1">
 												<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
