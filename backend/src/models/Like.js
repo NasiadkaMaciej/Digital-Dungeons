@@ -1,5 +1,14 @@
 const db = require('../config/database');
 
+// Helper to safely parse JSON
+const parseJSON = (str) => {
+	try {
+		return typeof str === 'string' ? JSON.parse(str) : str;
+	} catch {
+		return null;
+	}
+};
+
 class Like {
 	static async create(userId, gameId) {
 		try {
@@ -39,16 +48,21 @@ class Like {
 
 	static async findByUser(userId, limit = 50, offset = 0) {
 		const [rows] = await db.execute(
-			`SELECT l.like_id, l.date_liked, g.game_id, g.title, g.description, 
-                    g.likes_count, g.plays_count, u.username as author_name
+			`SELECT l.like_id, l.date_liked, g.game_id, g.title, g.description, g.game_content,
+                    g.likes_count, g.plays_count, u.username as author
              FROM likes l
              JOIN games g ON l.game_id = g.game_id
              JOIN users u ON g.author_id = u.user_id
+             WHERE l.user_id = ?
              ORDER BY l.date_liked DESC
              LIMIT ? OFFSET ?`,
-			[limit, offset]
+			[userId, limit, offset]
 		);
-		return rows;
+		return rows.map(row => ({
+			...row,
+			game_content: parseJSON(row.game_content),
+			tags: parseJSON(row.game_content)?.globalMeta?.tags || []
+		}));
 	}
 
 	static async checkLike(userId, gameId) {

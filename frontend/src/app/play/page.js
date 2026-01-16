@@ -2,10 +2,10 @@
 
 import GameConsole from '@/components/GameConsole';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { gamesApi } from '@/lib/api';
 
-export default function PlayPage() {
+function PlayPageContent() {
 	const searchParams = useSearchParams();
 	const gameId = searchParams.get('id');
 	const [gameData, setGameData] = useState(null);
@@ -44,5 +44,13 @@ export default function PlayPage() {
 		<div className="fixed inset-0 z-[999999] bg-black overflow-hidden" style={{ position: 'fixed' }}>
 			<GameConsole initialData={gameData} />
 		</div>
+	);
+}
+
+export default function PlayPage() {
+	return (
+		<Suspense fallback={<div className="text-center text-white mt-10">Loading...</div>}>
+			<PlayPageContent />
+		</Suspense>
 	);
 }

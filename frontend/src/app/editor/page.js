@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import RPGEditorCanvas from '@/components/RPGEditorCanvas.jsx';
 // EditorToolbar removed; actions migrated into EditorSidebar
@@ -11,7 +11,7 @@ import ConversationBridgeProvider from "@/providers/ConversationBridgeProvider";
 import EditorSidebar from "@/components/EditorSidebar";
 import { gamesApi } from '@/lib/api';
 
-export default function EditorPage() {
+function EditorPageContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [currentGameId, setCurrentGameId] = useState(null);
@@ -158,5 +158,17 @@ export default function EditorPage() {
 				</NoScroll>
 			</ConversationBridgeProvider>
 		</BridgeProvider>
+	);
+}
+
+export default function EditorPage() {
+	return (
+		<Suspense fallback={
+			<div className="flex items-center justify-center h-screen">
+				<p className="text-foreground/60">Loading...</p>
+			</div>
+		}>
+			<EditorPageContent />
+		</Suspense>
 	);
 }
