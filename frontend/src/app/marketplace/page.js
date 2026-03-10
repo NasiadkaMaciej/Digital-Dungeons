@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/lib/AuthContext';
-import { gamesApi, likesApi } from '@/lib/api';
-import { useRouter } from "next/navigation";
+import {useAuth} from '@/lib/AuthContext';
+import {gamesApi, likesApi} from '@/lib/api';
+import {useRouter} from "next/navigation";
 
 export default function MarketplacePage() {
 	const { isAuthenticated } = useAuth();
@@ -130,7 +130,7 @@ export default function MarketplacePage() {
 	// Sortowanie gier
 	const getSortedGames = () => {
 		const gamesCopy = [...filteredGames];
-		
+
 		switch(sortBy) {
 			case 'newest':
 				return gamesCopy.sort((a, b) => new Date(b.create_date) - new Date(a.create_date));
@@ -191,8 +191,9 @@ export default function MarketplacePage() {
 				<label className="text-sm text-foreground/60 font-mono">Sort by:</label>
 				<select
 					value={sortBy}
-					onChange={e => setSortBy(e.target.value)}
-					className="px-3 py-2 border border-foreground/20 rounded-md font-mono text-sm bg-background text-foreground focus:outline-none focus:border-red-500"
+					onChange={(e) => setSortBy(e.target.value)}
+					className="px-3 py-2 border border-foreground/20 rounded-md bg-background text-foreground text-sm font-mono focus:outline-none focus:border-red-500"
+					style={{ fontFamily: 'var(--font-geist-mono, monospace)' }}
 				>
 					<option value="newest">Newest</option>
 					<option value="oldest">Oldest</option>
@@ -364,7 +365,7 @@ export default function MarketplacePage() {
 						</Link>
 					))}
 				</div>
-			
+
 			{games.length < allGames.length && (
 				<div className="flex justify-center mt-8">
 					<button

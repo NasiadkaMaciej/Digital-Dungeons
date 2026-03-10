@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/lib/AuthContext';
+import {useEffect, useState} from 'react';
+import {useAuth} from '@/lib/AuthContext';
 
 export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) {
 	const [selection, setSelection] = useState(null); // "gx,gy" or null
@@ -137,6 +137,10 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 		<aside
 			className="fixed right-0 top-16 bottom-0 w-[340px] border-l border-foreground/10 bg-background/95 backdrop-blur px-4 py-3 overflow-y-auto z-40 flex flex-col"
 			aria-label="Editor sidebar"
+			onWheelCapture={(e) => e.stopPropagation()}
+			onMouseDownCapture={(e) => e.stopPropagation()}
+			onPointerDownCapture={(e) => e.stopPropagation()}
+			onTouchStartCapture={(e) => e.stopPropagation()}
 		>
 			<ActionBar {...{ onSave, onLoad, onNew, globalDirty, commitGlobalMeta, gameNameDraft, gameDescDraft, tagsDraft, snapshot, isAuthenticated: useAuth().isAuthenticated, currentGameId }} />
 			{!selectedRoom ? (
