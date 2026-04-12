@@ -1,0 +1,26 @@
+@startuml
+!include style.iuml
+title Krok rozgrywki (komenda gracza)
+
+autonumber
+participant "GameConsole (React)" as GC
+participant "commandParser.js" as CP
+participant "gameActions.js" as GA
+participant "Middleware JWT" as MJ
+participant "Route playthroughs.js" as PR
+participant "Model Playthrough" as PM
+database "MySQL" as DB
+
+GC -> CP: Komenda tekstowa gracza
+CP -> GA: Sparsowana komenda
+GA --> GC: Zaktualizowany stan gry + odpowiedz
+GC -> MJ: PUT /api/playthroughs/:id\n(game_state JSON + token)
+MJ -> MJ: Weryfikacja tokenu JWT
+MJ -> PR: Przekazanie zadania
+PR -> PM: Aktualizacja postepu rozgrywki
+PM -> DB: UPDATE playthroughs SET game_state
+DB --> PM: Potwierdzenie zapisu
+PM --> PR: Sukces
+PR --> GC: 200 OK
+GC -> GC: Wyswietlenie odpowiedzi tekstowej
+@enduml

@@ -81,18 +81,9 @@ w momencie utworzenia gry.
 
 ### 3.4. Diagram przypadków użycia
 
-[PLACEHOLDER: Diagram przypadków użycia (UML Use Case Diagram).
+Diagram przypadków użycia został przygotowany w PlantUML:
 
-Diagram powinien przedstawiać:
-- Aktorów: Gość, Zalogowany użytkownik, Twórca gry (dziedziczenie: Gość ← Zalogowany
-  użytkownik ← Twórca gry)
-- Przypadki użycia: rejestracja (Gość), logowanie (Gość), przeglądanie marketplace
-  (Gość), tworzenie gry (Zalogowany użytkownik), edycja gry (Twórca gry), usunięcie
-  gry (Twórca gry), publikacja gry (Twórca gry), uruchomienie rozgrywki (Zalogowany
-  użytkownik), zapis/odczyt stanu gry (Zalogowany użytkownik — <<include>> w rozgrywce),
-  dodawanie komentarza (Zalogowany użytkownik), polubienie gry (Zalogowany użytkownik),
-  edycja profilu (Zalogowany użytkownik)
-- Ramkę systemu z etykietą „Digital Dungeons"]
+- `Praca Licencjacka/diagramy-plantuml/use-case.puml`
 
 ### 3.5. Opis scenariuszy przypadków użycia
 
@@ -184,23 +175,11 @@ Poniżej opisano szczegółowe scenariusze dla wybranych przypadków użycia sys
 
 ### 3.6. Diagramy sekwencji
 
-[PLACEHOLDER: Diagramy sekwencji (UML Sequence Diagrams) dla trzech kluczowych operacji:
+Diagramy sekwencji zostały przygotowane w PlantUML:
 
-**Diagram 1: Logowanie użytkownika**
-Przepływ: Przeglądarka (klient) → POST /api/auth/login z danymi (e-mail, hasło) →
-Middleware Express → Route auth.js → Model User (weryfikacja bcrypt) → generowanie
-tokenu JWT → odpowiedź 200 z tokenem → zapis tokenu w localStorage po stronie klienta.
-
-**Diagram 2: Zapis gry przez edytor**
-Przepływ: Edytor (React + p5.js) → zebranie stanu kanwy jako JSON → POST /api/games
-z danymi gry → Middleware JWT (weryfikacja tokenu) → Route games.js → Model Game
-(INSERT do MySQL) → odpowiedź 201 z game_id → aktualizacja stanu edytora.
-
-**Diagram 3: Krok rozgrywki (komenda gracza)**
-Przepływ: GameConsole (React) → wprowadzenie komendy tekstowej → commandParser.js
-(parsowanie) → gameActions.js (wykonanie akcji) → aktualizacja lokalnego stanu gry →
-PUT /api/playthroughs/:id z nowym game_state JSON → Middleware JWT → Model Playthrough
-(UPDATE w MySQL) → odpowiedź 200 → wyświetlenie odpowiedzi tekstowej w konsoli.]
+- `Praca Licencjacka/diagramy-plantuml/sequence-login.puml` (logowanie użytkownika)
+- `Praca Licencjacka/diagramy-plantuml/sequence-save-game.puml` (zapis gry przez edytor)
+- `Praca Licencjacka/diagramy-plantuml/sequence-game-step.puml` (krok rozgrywki)
 
 ### 3.7. Model danych systemu
 
@@ -231,15 +210,13 @@ wielokrotne polubienie tej samej gry przez jednego użytkownika.
 powiązany z grą (game_id) i autorem (user_id) oraz zawiera treść tekstową i znacznik
 czasu dodania.
 
-[PLACEHOLDER: Diagram ER (Entity-Relationship Diagram) modelu danych.
-Diagram powinien przedstawiać pięć encji: users, games, playthroughs, likes, comments,
-wraz z ich atrybutami i relacjami. Kluczowe relacje:
-- users 1:N games (autor gry)
-- games 1:N playthroughs
-- games 1:N comments
-- users 1:N comments
-- users N:M games (poprzez tabelę likes)
-Atrybuty kluczowe: user_id PK, game_id PK, playthrough_id PK, like_id PK, comment_id PK.]
+Diagram ER modelu danych został przygotowany w PlantUML:
+
+- `Praca Licencjacka/diagramy-plantuml/erd.puml`
+
+Wspólny styl wizualny dla wszystkich diagramów:
+
+- `Praca Licencjacka/diagramy-plantuml/style.iuml`
 
 Strukturę danych JSON przechowywanych w polu game_content tabeli games ilustruje
 poniższy przykład:

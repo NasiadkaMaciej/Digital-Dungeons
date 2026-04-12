@@ -1,0 +1,64 @@
+@startuml
+!include style.iuml
+title Digital Dungeons - Diagram ER
+left to right direction
+
+entity "users" as USERS {
+  * user_id : INT <<PK>>
+  --
+  username : VARCHAR
+  email : VARCHAR
+  password_hash : VARCHAR
+  bio : TEXT
+  join_date : DATETIME
+  last_login : DATETIME
+}
+
+entity "games" as GAMES {
+  * game_id : INT <<PK>>
+  --
+  author_id : INT <<FK>>
+  title : VARCHAR
+  description : TEXT
+  game_content : JSON
+  is_published : BOOLEAN
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "playthroughs" as PLAYTHROUGHS {
+  * playthrough_id : INT <<PK>>
+  --
+  game_id : INT <<FK>>
+  user_id : INT <<FK>>
+  game_state : JSON
+  status : VARCHAR
+  started_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "likes" as LIKES {
+  * like_id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  game_id : INT <<FK>>
+  created_at : DATETIME
+}
+
+entity "comments" as COMMENTS {
+  * comment_id : INT <<PK>>
+  --
+  game_id : INT <<FK>>
+  user_id : INT <<FK>>
+  content : TEXT
+  created_at : DATETIME
+}
+
+USERS ||--o{ GAMES : tworzy
+GAMES ||--o{ PLAYTHROUGHS : posiada
+USERS ||--o{ PLAYTHROUGHS : prowadzi
+GAMES ||--o{ COMMENTS : ma
+USERS ||--o{ COMMENTS : dodaje
+USERS ||--o{ LIKES : wystawia
+GAMES ||--o{ LIKES : otrzymuje
+@enduml

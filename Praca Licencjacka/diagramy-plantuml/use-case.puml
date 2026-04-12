@@ -1,0 +1,43 @@
+@startuml
+!include style.iuml
+title Digital Dungeons - Diagram przypadkow uzycia
+left to right direction
+
+actor "Gosc" as Guest
+actor "Zalogowany uzytkownik" as User
+actor "Tworca gry" as Creator
+
+User -|> Guest
+Creator -|> User
+
+rectangle "Digital Dungeons" {
+  usecase "Rejestracja" as UC1
+  usecase "Logowanie" as UC2
+  usecase "Przegladanie marketplace" as UC3
+  usecase "Tworzenie gry" as UC4
+  usecase "Edycja gry" as UC5
+  usecase "Usuniecie gry" as UC6
+  usecase "Publikacja gry" as UC7
+  usecase "Uruchomienie rozgrywki" as UC8
+  usecase "Zapis/Odczyt stanu gry" as UC9
+  usecase "Dodawanie komentarza" as UC10
+  usecase "Polubienie gry" as UC11
+  usecase "Edycja profilu" as UC12
+}
+
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+
+User --> UC4
+User --> UC8
+User --> UC10
+User --> UC11
+User --> UC12
+
+Creator --> UC5
+Creator --> UC6
+Creator --> UC7
+
+UC8 .> UC9 : <<include>>
+@enduml

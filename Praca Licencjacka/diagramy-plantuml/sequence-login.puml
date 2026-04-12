@@ -1,0 +1,21 @@
+@startuml
+!include style.iuml
+title Logowanie uzytkownika
+
+autonumber
+actor "Przegladarka (klient)" as K
+participant "Middleware Express" as M
+participant "Route auth.js" as R
+participant "Model User" as U
+participant "JWT" as J
+
+K -> M: POST /api/auth/login\n(e-mail, haslo)
+M -> R: Przekazanie zadania
+R -> U: Pobranie uzytkownika po e-mail
+U --> R: Dane uzytkownika + password_hash
+R -> R: Weryfikacja hasla (bcrypt)
+R -> J: Generowanie tokenu
+J --> R: Token JWT
+R --> K: 200 OK + token
+K -> K: Zapis tokenu w localStorage
+@enduml

@@ -1,0 +1,47 @@
+' Wspolny styl dla diagramow w pracy dyplomowej
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 13
+skinparam ArrowColor #1F2937
+skinparam ArrowThickness 1
+skinparam Shadowing false
+skinparam RoundCorner 10
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+skinparam rectangle {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #111827
+}
+
+skinparam usecase {
+  BackgroundColor #EFF6FF
+  BorderColor #1D4ED8
+  FontColor #0F172A
+}
+
+skinparam actor {
+  FontColor #111827
+  BorderColor #334155
+}
+
+skinparam sequence {
+  LifeLineBorderColor #334155
+  LifeLineBackgroundColor #F8FAFC
+  ParticipantBorderColor #334155
+  ParticipantBackgroundColor #E2E8F0
+  ParticipantFontColor #111827
+  ActorBorderColor #334155
+  ActorBackgroundColor #E2E8F0
+  ActorFontColor #111827
+}
+
+skinparam class {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #1F2937
+  FontColor #111827
+}
+
+hide circle

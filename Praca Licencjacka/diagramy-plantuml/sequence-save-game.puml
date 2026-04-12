@@ -1,0 +1,22 @@
+@startuml
+!include style.iuml
+title Zapis gry przez edytor
+
+autonumber
+participant "Edytor (React + p5.js)" as E
+participant "Middleware JWT" as MJ
+participant "Route games.js" as G
+participant "Model Game" as GM
+database "MySQL" as DB
+
+E -> E: Zebranie stanu kanwy do JSON
+E -> MJ: POST /api/games\n(dane gry + token)
+MJ -> MJ: Weryfikacja tokenu JWT
+MJ -> G: Przekazanie zadania uwierzytelnionego
+G -> GM: Utworzenie rekordu gry
+GM -> DB: INSERT INTO games
+DB --> GM: game_id
+GM --> G: game_id
+G --> E: 201 Created + game_id
+E -> E: Aktualizacja stanu edytora
+@enduml
