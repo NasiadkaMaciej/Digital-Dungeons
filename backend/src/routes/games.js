@@ -22,12 +22,14 @@ const checkGameOwnership = async (gameId, userId, res) => {
 router.get('/', optionalAuth, async (req, res, next) => {
 	try {
 		const { limit = 20, offset = 0, tags } = req.query;
-		const tagsArray = tags 
+		const safeLimit = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+		const safeOffset = Math.max(parseInt(offset) || 0, 0);
+		const tagsArray = tags
 			? (Array.isArray(tags) ? tags : tags.split(',')).map(tag => tag.trim()).filter(tag => tag)
 			: [];
 		const games = await Game.findAll({
-			limit: parseInt(limit),
-			offset: parseInt(offset),
+			limit: safeLimit,
+			offset: safeOffset,
 			published: true,
 			tags: tagsArray
 		});
@@ -110,10 +112,11 @@ router.delete('/:id', auth, async (req, res, next) => {
 	}
 });
 
-// Get user's games
-router.get('/user/:userId', async (req, res, next) => {
+// Get user's games (drafts only visible to owner)
+router.get('/user/:userId', optionalAuth, async (req, res, next) => {
 	try {
-		const games = await Game.findByAuthor(req.params.userId);
+		const isOwner = req.user && parseInt(req.user.userId) === parseInt(req.params.userId);
+		const games = await Game.findByAuthor(req.params.userId, !isOwner);
 		res.json(games);
 	} catch (error) {
 		next(error);

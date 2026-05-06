@@ -17,6 +17,14 @@ const [searchGames, setSearchGames] = useState('');
 const [likedGames, setLikedGames] = useState([]);
 const [loadingLikedGames, setLoadingLikedGames] = useState(false);
 const [searchLikedGames, setSearchLikedGames] = useState('');
+const [notification, setNotification] = useState(null);
+const [deleteGameModal, setDeleteGameModal] = useState(null);
+const [deleteGameLoading, setDeleteGameLoading] = useState(false);
+
+const showNotification = (message, type = 'error') => {
+setNotification({ message, type });
+setTimeout(() => setNotification(null), 4000);
+};
 
 const displayUser = localUser || user;
 
@@ -80,14 +88,21 @@ const response = await usersApi.updateProfile(bio);
 setLocalUser(response.user);
 };
 
-const handleDeleteGame = async (gameId) => {
-if (!confirm('Are you sure you want to delete this game?')) return;
+const handleDeleteGame = (game) => {
+setDeleteGameModal(game);
+};
 
+const confirmDeleteGame = async () => {
+if (!deleteGameModal) return;
+setDeleteGameLoading(true);
 try {
-await gamesApi.deleteGame(gameId);
-setUserGames(userGames.filter(g => g.game_id !== gameId));
+await gamesApi.deleteGame(deleteGameModal.game_id);
+setUserGames(userGames.filter(g => g.game_id !== deleteGameModal.game_id));
+setDeleteGameModal(null);
 } catch (err) {
-alert('Failed to delete game: ' + err.message);
+showNotification('Failed to delete game: ' + err.message);
+} finally {
+setDeleteGameLoading(false);
 }
 };
 
@@ -100,7 +115,7 @@ g.game_id === gameId
 : g
 ));
 } catch (err) {
-alert('Failed to update publish status: ' + err.message);
+showNotification('Failed to update publish status: ' + err.message);
 }
 };
 
@@ -109,7 +124,7 @@ try {
 await likesApi.unlikeGame(gameId);
 setLikedGames((prev) => prev.filter(g => g.game_id !== gameId));
 } catch (err) {
-alert('Failed to unlike game: ' + err.message);
+showNotification('Failed to unlike game: ' + err.message);
 }
 };
 
@@ -138,6 +153,45 @@ game.title.toLowerCase().includes(searchLikedGames.toLowerCase()) ||
 
 return (
 <>
+{notification && (
+<div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-md text-sm font-mono shadow-lg pointer-events-none ${
+notification.type === 'success'
+? 'bg-green-900 border border-green-500 text-green-100'
+: 'bg-red-900 border border-red-500 text-red-100'
+}`}>
+{notification.message}
+</div>
+)}
+
+{deleteGameModal && (
+<div className="fixed inset-0 z-50 flex items-center justify-center px-12 py-10 bg-background/80 backdrop-blur-xs">
+<div className="bg-background border border-red-500 rounded-lg px-12 py-10 w-full max-w-md">
+<h2 className="text-2xl font-black mb-4">Delete Game</h2>
+<p className="text-foreground/80 font-mono mb-8">
+Are you sure you want to delete &ldquo;{deleteGameModal.title}&rdquo;? This action cannot be undone.
+</p>
+<div className="flex gap-3 justify-end">
+<button
+type="button"
+onClick={() => setDeleteGameModal(null)}
+disabled={deleteGameLoading}
+className="px-4 py-2 bg-background border-1 border-foreground/20 hover:border-red-500 rounded font-medium disabled:opacity-50 cursor-pointer text-sm text-foreground"
+>
+Cancel
+</button>
+<button
+type="button"
+onClick={confirmDeleteGame}
+disabled={deleteGameLoading}
+className="px-4 py-2 bg-red-500 hover:bg-red-700 rounded font-medium disabled:opacity-50 cursor-pointer text-sm text-background"
+>
+{deleteGameLoading ? 'Deleting...' : 'Delete'}
+</button>
+</div>
+</div>
+</div>
+)}
+
 <div className="space-y-12">
 <div className="flex justify-between items-center">
 <h1 className="text-5xl font-black">Profile</h1>
@@ -294,7 +348,7 @@ className={`px-4 py-2 rounded text-sm font-medium transition-colors text-backgro
 {game.is_published ? 'Unpublish' : 'Publish'}
 </button>
 <button
-onClick={() => handleDeleteGame(game.game_id)}
+onClick={() => handleDeleteGame(game)}
 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-background rounded text-sm font-medium transition-colors"
 >
 Delete

@@ -17,7 +17,7 @@ class Playthrough {
 		const row = rows[0];
 		if (!row) return null;
 		if (row.game_state && typeof row.game_state === 'string') {
-			try { row.game_state = JSON.parse(row.game_state); } catch {}
+			try { row.game_state = JSON.parse(row.game_state); } catch (e) { console.error('Failed to parse game_state for playthrough', row.playthrough_id, e); }
 		}
 		return row;
 	}
@@ -34,7 +34,7 @@ class Playthrough {
 		);
 		return rows.map(row => {
 			if (row.game_state && typeof row.game_state === 'string') {
-				try { row.game_state = JSON.parse(row.game_state); } catch {}
+				try { row.game_state = JSON.parse(row.game_state); } catch (e) { console.error('Failed to parse game_state for playthrough', row.playthrough_id, e); }
 			}
 			return row;
 		});
@@ -90,7 +90,7 @@ class Playthrough {
 		const row = rows[0];
 		if (!row) return null;
 		if (row.game_state && typeof row.game_state === 'string') {
-			try { row.game_state = JSON.parse(row.game_state); } catch {}
+			try { row.game_state = JSON.parse(row.game_state); } catch (e) { console.error('Failed to parse game_state for playthrough', row.playthrough_id, e); }
 		}
 		return row;
 	}

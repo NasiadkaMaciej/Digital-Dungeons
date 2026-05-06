@@ -42,9 +42,17 @@ export default function GameConsole({ initialData, initialState = null, onSave =
 	const logEndRef = useRef(null);
 	const logContainerRef = useRef(null);
 
+	const MAX_LOG_BODY = 500;
+
 	// ===== UTILITY FUNCTIONS =====
 	const appendToLog = useCallback((lines) => {
-		setLog((prev) => [...prev, ...lines]);
+		setLog((prev) => {
+			const header = prev.slice(0, 2);
+			const body = prev.slice(2);
+			const newBody = [...body, ...lines];
+			const trimmed = newBody.length > MAX_LOG_BODY ? newBody.slice(newBody.length - MAX_LOG_BODY) : newBody;
+			return [...header, ...trimmed];
+		});
 	}, []);
 
 	const focusInput = useCallback(() => {

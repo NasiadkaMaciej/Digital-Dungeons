@@ -5,6 +5,15 @@ import { authApi } from '@/lib/api';
 
 const AuthContext = createContext(null);
 
+const isTokenExpired = (token) => {
+	try {
+		const payload = JSON.parse(atob(token.split('.')[1]));
+		return payload.exp * 1000 < Date.now();
+	} catch {
+		return true;
+	}
+};
+
 export function AuthProvider({ children }) {
 	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
@@ -14,7 +23,12 @@ export function AuthProvider({ children }) {
 	useEffect(() => {
 		const token = localStorage.getItem('authToken');
 		if (token) {
-			loadUser();
+			if (isTokenExpired(token)) {
+				localStorage.removeItem('authToken');
+				setLoading(false);
+			} else {
+				loadUser();
+			}
 		} else {
 			setLoading(false);
 		}

@@ -22,11 +22,18 @@ export default function GameDetailsPage() {
 	const [editingCommentId, setEditingCommentId] = useState(null);
 	const [editingCommentText, setEditingCommentText] = useState('');
 
+	const [notification, setNotification] = useState(null);
+
 	// delete modal state
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 	const [commentToDelete, setCommentToDelete] = useState(null);
 	const [deleteLoading, setDeleteLoading] = useState(false);
 	const [deleteError, setDeleteError] = useState('');
+
+	const showNotification = (message, type = 'error') => {
+		setNotification({ message, type });
+		setTimeout(() => setNotification(null), 4000);
+	};
 
 	useEffect(() => {
 		loadGameDetails();
@@ -61,7 +68,7 @@ export default function GameDetailsPage() {
 
 	const handleResetPlaythrough = async () => {
 		if (!isAuthenticated) {
-			alert('Please log in to reset progress');
+			showNotification('Please log in to reset progress');
 			return;
 		}
 		setResetLoading(true);
@@ -69,7 +76,7 @@ export default function GameDetailsPage() {
 		try {
 			await playthroughsApi.reset(params.id);
 			setHasPlaythrough(true);
-			alert('Playthrough reset. Start again from the beginning.');
+			showNotification('Playthrough reset. Start again from the beginning.', 'success');
 		} catch (err) {
 			setResetError(err?.message || 'Failed to reset playthrough');
 		} finally {
@@ -79,7 +86,7 @@ export default function GameDetailsPage() {
 
 	const handleLike = async () => {
 		if (!isAuthenticated) {
-			alert('Please log in to like games');
+			showNotification('Please log in to like games');
 			return;
 		}
 
@@ -94,7 +101,7 @@ export default function GameDetailsPage() {
 				setGame({ ...game, likes_count: game.likes_count + 1 });
 			}
 		} catch (err) {
-			alert('Failed to update like: ' + err.message);
+			showNotification('Failed to update like: ' + err.message);
 		}
 	};
 
@@ -103,7 +110,7 @@ export default function GameDetailsPage() {
 	const handleSubmitComment = async (e) => {
 		e.preventDefault();
 		if (!isAuthenticated) {
-			alert('Please log in to comment');
+			showNotification('Please log in to comment');
 			return;
 		}
 
@@ -115,7 +122,7 @@ export default function GameDetailsPage() {
 			setComments([response.comment, ...comments]);
 			setCommentText('');
 		} catch (err) {
-			alert('Failed to post comment: ' + err.message);
+			showNotification('Failed to post comment: ' + err.message);
 		} finally {
 			setSubmittingComment(false);
 		}
@@ -130,7 +137,7 @@ export default function GameDetailsPage() {
 			setEditingCommentId(null);
 			setEditingCommentText('');
 		} catch (err) {
-			alert('Failed to update comment: ' + err.message);
+			showNotification('Failed to update comment: ' + err.message);
 		}
 	};
 
@@ -190,6 +197,15 @@ export default function GameDetailsPage() {
 
 	return (
 		<div className="max-w-4xl mx-auto space-y-8">
+			{notification && (
+				<div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-md text-sm font-mono shadow-lg pointer-events-none ${
+					notification.type === 'success'
+						? 'bg-green-900 border border-green-500 text-green-100'
+						: 'bg-red-900 border border-red-500 text-red-100'
+				}`}>
+					{notification.message}
+				</div>
+			)}
 			{/* Game Header */}
 			<div className="bg-background rounded-lg px-12 py-10 border border-foreground/10">
 				<span className="text-sm font-mono text-foreground/50">

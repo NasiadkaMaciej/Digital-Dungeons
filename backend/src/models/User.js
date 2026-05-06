@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 
 class User {
 	static async create({ username, email, password }) {
-		const hashedPassword = await bcrypt.hash(password, 10);
+		const hashedPassword = await bcrypt.hash(password, 12);
 		const [result] = await db.execute(
 			'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
 			[username, email, hashedPassword]

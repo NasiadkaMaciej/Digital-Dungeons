@@ -43,39 +43,54 @@ class Game {
 		const params = [published];
 
 		if (tags.length > 0) {
-			// Build separate JSON_CONTAINS conditions for each tag - ALL tags must be present (AND logic)
-			const tagConditions = [];
-			for (const tag of tags) {
-				tagConditions.push(`JSON_CONTAINS(JSON_EXTRACT(g.game_content, '$.globalMeta.tags'), JSON_QUOTE(?))`);
-				params.push(tag);
-			}
+			const tagConditions = tags.map(() =>
+				`JSON_CONTAINS(JSON_EXTRACT(g.game_content, '$.globalMeta.tags'), JSON_QUOTE(?))`
+			);
 			query += ` AND ${tagConditions.join(' AND ')}`;
+			params.push(...tags);
 		}
 
 		query += ` ORDER BY g.create_date DESC LIMIT ? OFFSET ?`;
 		params.push(limit, offset);
 
 		const [rows] = await db.execute(query, params);
-		return rows.map(row => ({
-			...row,
-			game_content: parseJSON(row.game_content),
-			tags: parseJSON(row.game_content)?.globalMeta?.tags || []
-		}));
+		return rows.map(row => {
+			const content = parseJSON(row.game_content);
+			return {
+				...row,
+				game_content: content,
+				tags: content?.globalMeta?.tags || []
+			};
+		});
 	}
 
-	static async findByAuthor(authorId) {
-		const [rows] = await db.execute(
-			`SELECT game_id, title, description, create_date, update_date, is_published, likes_count, plays_count, game_content
+	static async findByAuthor(authorId, onlyPublished = false) {
+		let query = `SELECT game_id, title, description, create_date, update_date, is_published, likes_count, plays_count, game_content
        FROM games
-       WHERE author_id = ?
-       ORDER BY update_date DESC`,
+       WHERE author_id = ?`;
+		if (onlyPublished) query += ` AND is_published = TRUE`;
+		query += ` ORDER BY update_date DESC`;
+
+		const [rows] = await db.execute(query, [authorId]);
+		return rows.map(row => {
+			const content = parseJSON(row.game_content);
+			return {
+				...row,
+				game_content: content,
+				tags: content?.globalMeta?.tags || []
+			};
+		});
+	}
+
+	static async getAuthorStats(authorId) {
+		const [rows] = await db.execute(
+			`SELECT COUNT(*) as game_count,
+			        COALESCE(SUM(likes_count), 0) as total_likes,
+			        COALESCE(SUM(plays_count), 0) as total_plays
+			 FROM games WHERE author_id = ?`,
 			[authorId]
 		);
-		return rows.map(row => ({
-			...row,
-			game_content: parseJSON(row.game_content),
-			tags: parseJSON(row.game_content)?.globalMeta?.tags || []
-		}));
+		return rows[0];
 	}
 
 	static async update(gameId, { title, description, gameContent, isPublished }) {

@@ -21,12 +21,9 @@ const checkCommentOwnership = async (commentId, userId, res) => {
 // Get comments for a game
 router.get('/game/:gameId', optionalAuth, async (req, res, next) => {
 	try {
-		const { limit = 50, offset = 0 } = req.query;
-		const comments = await Comment.findByGame(
-			req.params.gameId,
-			parseInt(limit),
-			parseInt(offset)
-		);
+		const safeLimit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 100);
+		const safeOffset = Math.max(parseInt(req.query.offset) || 0, 0);
+		const comments = await Comment.findByGame(req.params.gameId, safeLimit, safeOffset);
 		const count = await Comment.countByGame(req.params.gameId);
 		res.json({ comments, total: count });
 	} catch (error) {

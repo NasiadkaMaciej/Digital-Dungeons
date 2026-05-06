@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Game = require('../models/Game');
 const Like = require('../models/Like');
 const Playthrough = require('../models/Playthrough');
-const { auth } = require('../middleware/auth');
+const { auth, optionalAuth } = require('../middleware/auth');
 
 // Get user profile by ID
 router.get('/:userId', async (req, res, next) => {
@@ -51,10 +51,11 @@ router.put(
 	}
 );
 
-// Get user's created games
-router.get('/:userId/games', async (req, res, next) => {
+// Get user's created games (drafts only visible to owner)
+router.get('/:userId/games', optionalAuth, async (req, res, next) => {
 	try {
-		const games = await Game.findByAuthor(req.params.userId);
+		const isOwner = req.user && parseInt(req.user.userId) === parseInt(req.params.userId);
+		const games = await Game.findByAuthor(req.params.userId, !isOwner);
 		res.json(games);
 	} catch (error) {
 		next(error);
@@ -64,12 +65,9 @@ router.get('/:userId/games', async (req, res, next) => {
 // Get user's liked games
 router.get('/:userId/likes', async (req, res, next) => {
 	try {
-		const { limit = 50, offset = 0 } = req.query;
-		const likes = await Like.findByUser(
-			req.params.userId,
-			parseInt(limit),
-			parseInt(offset)
-		);
+		const safeLimit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 100);
+		const safeOffset = Math.max(parseInt(req.query.offset) || 0, 0);
+		const likes = await Like.findByUser(req.params.userId, safeLimit, safeOffset);
 		res.json(likes);
 	} catch (error) {
 		next(error);
@@ -80,16 +78,13 @@ router.get('/:userId/likes', async (req, res, next) => {
 router.get('/:userId/playthroughs', auth, async (req, res, next) => {
 	try {
 		// Only allow users to see their own playthroughs
-		if (req.user.userId !== parseInt(req.params.userId)) {
+		if (parseInt(req.user.userId) !== parseInt(req.params.userId)) {
 			return res.status(403).json({ error: 'Not authorized' });
 		}
 
-		const { limit = 20, offset = 0 } = req.query;
-		const playthroughs = await Playthrough.findByUser(
-			req.params.userId,
-			parseInt(limit),
-			parseInt(offset)
-		);
+		const safeLimit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
+		const safeOffset = Math.max(parseInt(req.query.offset) || 0, 0);
+		const playthroughs = await Playthrough.findByUser(req.params.userId, safeLimit, safeOffset);
 		res.json(playthroughs);
 	} catch (error) {
 		next(error);
@@ -99,20 +94,19 @@ router.get('/:userId/playthroughs', auth, async (req, res, next) => {
 // Get user statistics
 router.get('/:userId/stats', async (req, res, next) => {
 	try {
-		const user = await User.findById(req.params.userId);
+		const [user, gameStats] = await Promise.all([
+			User.findById(req.params.userId),
+			Game.getAuthorStats(req.params.userId),
+		]);
 		if (!user) {
 			return res.status(404).json({ error: 'User not found' });
 		}
 
-		const games = await Game.findByAuthor(req.params.userId);
-		const totalLikes = games.reduce((sum, game) => sum + game.likes_count, 0);
-		const totalPlays = games.reduce((sum, game) => sum + game.plays_count, 0);
-
 		res.json({
-			created_games: user.created_games_count || games.length,
+			created_games: gameStats.game_count,
 			completed_games: user.completed_games_count || 0,
-			total_likes_received: totalLikes,
-			total_plays: totalPlays,
+			total_likes_received: gameStats.total_likes,
+			total_plays: gameStats.total_plays,
 			member_since: user.join_date,
 		});
 	} catch (error) {

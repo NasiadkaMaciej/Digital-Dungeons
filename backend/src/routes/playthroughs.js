@@ -8,12 +8,9 @@ const { auth } = require('../middleware/auth');
 // Get user's playthroughs
 router.get('/user', auth, async (req, res, next) => {
 	try {
-		const { limit = 20, offset = 0 } = req.query;
-		const playthroughs = await Playthrough.findByUser(
-			req.user.userId,
-			parseInt(limit),
-			parseInt(offset)
-		);
+		const safeLimit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
+		const safeOffset = Math.max(parseInt(req.query.offset) || 0, 0);
+		const playthroughs = await Playthrough.findByUser(req.user.userId, safeLimit, safeOffset);
 		res.json(playthroughs);
 	} catch (error) {
 		next(error);

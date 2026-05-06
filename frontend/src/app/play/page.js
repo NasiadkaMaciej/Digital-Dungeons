@@ -13,6 +13,7 @@ function PlayPageContent() {
 	const [initialState, setInitialState] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [saveError, setSaveError] = useState(null);
 	const loadAbortRef = useRef(null);
 
 	useEffect(() => {
@@ -80,7 +81,6 @@ function PlayPageContent() {
 	}
 
 	const handleSave = async (snapshot) => {
-		// Persist progress if playthrough exists
 		try {
 			if (playthrough?.playthrough_id || playthrough?.id) {
 				const id = playthrough.playthrough_id ?? playthrough.id;
@@ -88,11 +88,18 @@ function PlayPageContent() {
 			}
 		} catch (e) {
 			console.warn('Failed to save playthrough:', e);
+			setSaveError('Progress could not be saved. Check your connection.');
+			setTimeout(() => setSaveError(null), 5000);
 		}
 	};
 
 	return (
 		<div className="fixed inset-0 z-[999999] bg-black overflow-hidden" style={{ position: 'fixed' }}>
+			{saveError && (
+				<div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-red-900 border border-red-500 text-white text-sm px-4 py-2 rounded pointer-events-none">
+					{saveError}
+				</div>
+			)}
 			<GameConsole
 				initialData={gameData}
 				initialState={initialState}
