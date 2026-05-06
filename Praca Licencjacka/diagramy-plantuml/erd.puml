@@ -8,10 +8,11 @@ entity "users" as USERS {
   --
   username : VARCHAR
   email : VARCHAR
-  password_hash : VARCHAR
-  bio : TEXT
+  password : VARCHAR
+  profile_bio : TEXT
   join_date : DATETIME
   last_login : DATETIME
+  is_active : BOOLEAN
 }
 
 entity "games" as GAMES {
@@ -22,8 +23,10 @@ entity "games" as GAMES {
   description : TEXT
   game_content : JSON
   is_published : BOOLEAN
-  created_at : DATETIME
-  updated_at : DATETIME
+  likes_count : INT
+  plays_count : INT
+  create_date : DATETIME
+  update_date : DATETIME
 }
 
 entity "playthroughs" as PLAYTHROUGHS {
@@ -32,9 +35,9 @@ entity "playthroughs" as PLAYTHROUGHS {
   game_id : INT <<FK>>
   user_id : INT <<FK>>
   game_state : JSON
-  status : VARCHAR
-  started_at : DATETIME
-  updated_at : DATETIME
+  status : ENUM
+  start_date : DATETIME
+  last_active : DATETIME
 }
 
 entity "likes" as LIKES {
@@ -42,7 +45,7 @@ entity "likes" as LIKES {
   --
   user_id : INT <<FK>>
   game_id : INT <<FK>>
-  created_at : DATETIME
+  date_liked : DATETIME
 }
 
 entity "comments" as COMMENTS {
@@ -51,7 +54,8 @@ entity "comments" as COMMENTS {
   game_id : INT <<FK>>
   user_id : INT <<FK>>
   content : TEXT
-  created_at : DATETIME
+  date_posted : DATETIME
+  is_edited : BOOLEAN
 }
 
 USERS ||--o{ GAMES : tworzy
