@@ -1,0 +1,2 @@
+Planuję wdrożyć produkcyjnie tą aplikację. Przeskanuj ją w poszukiwaniu podatności, które będą mogły zostać wykorzystane.
+Przygotuj skrypt, który uruchomi apkę

@@ -6,6 +6,7 @@
 const ROOM_W = 160;
 const ROOM_H = 100;
 const CELL_GAP = 40; // spacing between rooms
+const SIDEBAR_W = 340; // must match EditorSidebar CSS w-[340px]
 const ROOM_FILL = '#1f1f1f';
 const ROOM_STROKE = '#5cff7d';
 const ROOM_STROKE_INACTIVE = '#4a4a4a';
@@ -279,7 +280,8 @@ export const sketchFactory = (p) => {
 
 	// ----- Camera helpers -----
 	function centreCamera() {
-		cam.x = p.width / 2;
+		// Centre in the visible area (left of the sidebar)
+		cam.x = (p.width - SIDEBAR_W) / 2;
 		cam.y = p.height / 2;
 		cam.z = 1.0;
 	}
@@ -547,22 +549,11 @@ export const sketchFactory = (p) => {
 	};
 
 	p.mouseDragged = () => {
-		if (inputsLocked()) return;
-		if (isCameraLocked()) return;
-
-		// Continue panning on RIGHT/MIDDLE drag
-		if (isPanning || p.mouseButton === p.RIGHT || p.mouseButton === p.CENTER) {
-			if (!isPanning) {
-				// If panning wasn’t started yet, initialise anchors
-				isPanning = true;
-				panAnchor.x = p.mouseX;
-				panAnchor.y = p.mouseY;
-				camAnchor.x = cam.x;
-				camAnchor.y = cam.y;
-			}
-			cam.x = camAnchor.x + (p.mouseX - panAnchor.x);
-			cam.y = camAnchor.y + (p.mouseY - panAnchor.y);
-		}
+		// Panning is handled by pointer events (onPointerMove) attached in setup.
+		// Update hover state while dragging over rooms (e.g. left-button drag).
+		if (inputsLocked() || isPanning) return;
+		const w = screenToWorld(p.mouseX, p.mouseY);
+		updateHover(w.x, w.y);
 	};
 
 	p.mouseReleased = () => {
@@ -583,7 +574,6 @@ export const sketchFactory = (p) => {
 
 		// Start panning immediately on RIGHT or MIDDLE
 		if (p.mouseButton === p.RIGHT || p.mouseButton === p.CENTER) {
-			console.log("panning");
 			isPanning = true;
 			panAnchor.x = p.mouseX;
 			panAnchor.y = p.mouseY;
@@ -628,8 +618,10 @@ export const sketchFactory = (p) => {
 		if (inputsLocked()) return;
 		if (isCameraLocked()) return false;
 
-		const delta = -e.delta;
-		const zoomFactor = 1 + (delta > 0 ? 0.1 : -0.1);
+		// Scale zoom step by delta magnitude so trackpad (many tiny events) stays smooth
+		// and mouse wheel (single large-delta event, ~100) gives the same ~10% per click.
+		const step = Math.min(Math.abs(e.delta) * 0.001, 0.12);
+		const zoomFactor = e.delta > 0 ? (1 - step) : (1 + step);
 		const newZ = p.constrain(cam.z * zoomFactor, cam.minZ, cam.maxZ);
 
 		const wx1 = (p.mouseX - cam.x) / cam.z;
@@ -706,6 +698,36 @@ export const sketchFactory = (p) => {
 	}
 
 	function drawRoomContents(room) {
+		const rr = roomRect(room.gx, room.gy);
+
+		// Starting room star badge (top-left corner)
+		if (room.meta?.isStart) {
+			p.push();
+			p.noStroke();
+			p.fill('#fbbf24');
+			p.textAlign(p.LEFT, p.TOP);
+			p.textSize(ROOM_H * 0.13);
+			p.textFont('sans-serif');
+			p.text('★', rr.x + ROOM_H * 0.05, rr.y + ROOM_H * 0.04);
+			p.pop();
+		}
+
+		// Room name (centered, top half)
+		const roomName = room.meta?.name || '';
+		if (roomName) {
+			p.push();
+			p.noStroke();
+			p.fill(room.selected ? '#ffd74a' : '#d4d4d4');
+			p.textAlign(p.CENTER, p.TOP);
+			p.textSize(ROOM_H * 0.11);
+			p.textFont('sans-serif');
+			// Clip to room width with a small horizontal pad
+			const nameY = rr.y + ROOM_H * 0.1;
+			const maxNameW = rr.w - ROOM_H * 0.25;
+			p.text(roomName, rr.x + rr.w / 2, nameY, maxNameW, ROOM_H * 0.28);
+			p.pop();
+		}
+
 		if (!room.meta) return;
 
 		// Proportional world-units (relative to ROOM_H)
@@ -715,8 +737,6 @@ export const sketchFactory = (p) => {
 		const STROKE = ROOM_H * 0.015;  // line thickness
 		const RADIUS = ROOM_H * 0.02;   // small corner radius
 		const TAIL = ROOM_H * 0.04;   // speech-bubble tail size
-
-		const rr = roomRect(room.gx, room.gy);
 
 		let ix = rr.x + PAD;
 		const iy = rr.y + rr.h - PAD - ICON;

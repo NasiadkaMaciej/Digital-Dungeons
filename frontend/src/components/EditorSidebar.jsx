@@ -31,6 +31,7 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 	const [hasChest, setHasChest] = useState(false);
 	const [entities, setEntities] = useState([]);
 	const [roomItems, setRoomItems] = useState([]);
+	const [roomNameDraft, setRoomNameDraft] = useState('');
 	const [lastSyncedRoomId, setLastSyncedRoomId] = useState(null);
 
 	// ----- Global Meta Draft State -----
@@ -61,6 +62,7 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 			} else {
 				setRoomItems([]);
 			}
+			setRoomNameDraft(selectedRoom?.meta?.name ?? '');
 			setLastSyncedRoomId(effectiveSelectionId);
 		}
 	}, [effectiveSelectionId, selectedRoom, lastSyncedRoomId]);
@@ -142,7 +144,7 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 			onPointerDownCapture={(e) => e.stopPropagation()}
 			onTouchStartCapture={(e) => e.stopPropagation()}
 		>
-			<ActionBar {...{ onSave, onLoad, onNew, globalDirty, commitGlobalMeta, gameNameDraft, gameDescDraft, tagsDraft, snapshot, isAuthenticated: useAuth().isAuthenticated, currentGameId }} />
+			<ActionBar {...{ onSave, onLoad, onNew, globalDirty, commitGlobalMeta, gameNameDraft, gameDescDraft, isAuthenticated: useAuth().isAuthenticated, currentGameId }} />
 			{!selectedRoom ? (
 				<div className="space-y-3">
 					<h2 className="text-lg font-semibold">Game Metadata</h2>
@@ -202,45 +204,61 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 				</div>
 			) : (
 				<div className="space-y-3">
-					<h2 className="text-lg font-semibold">Room Metadata</h2>
-					<div className="text-sm space-y-1">
-						<div className="flex justify-between"><span className="text-foreground/60">ID:</span><span className="font-mono">{selectedRoom.id}</span></div>
-						<div className="flex justify-between"><span className="text-foreground/60">Grid:</span><span className="font-mono">({selectedRoom.gx},{selectedRoom.gy})</span></div>
-						<div className="flex justify-between items-center mt-1">
-							<span className="text-foreground/60 text-xs">Starting:</span>
-							{selectedRoom.meta?.isStart ? (
-								<span className="text-green-400 text-xs font-medium">Yes</span>
-							) : (
-								<button
-									onClick={() => window.__editorSetStartingRoom?.(selectedRoom.id)}
-									className="px-2 py-0.5 text-xs rounded bg-purple-600 hover:bg-purple-700"
-								>Set as Starting Room</button>
-							)}
+					<div className="flex items-start justify-between gap-2">
+						<div>
+							<h2 className="text-lg font-semibold leading-tight">
+								{selectedRoom.meta?.name || <span className="text-foreground/40 italic">Unnamed Room</span>}
+							</h2>
+							<p className="text-xs text-foreground/40 font-mono mt-0.5">
+								{selectedRoom.id} · ({selectedRoom.gx},{selectedRoom.gy})
+							</p>
 						</div>
+						{selectedRoom.meta?.isStart ? (
+							<span className="shrink-0 px-2 py-0.5 rounded text-[10px] font-semibold bg-green-600/20 text-green-400 border border-green-600/30">
+								START
+							</span>
+						) : (
+							<button
+								onClick={() => window.__editorSetStartingRoom?.(selectedRoom.id)}
+								className="shrink-0 px-2 py-0.5 text-[10px] font-semibold rounded bg-purple-600/20 text-purple-300 border border-purple-600/30 hover:bg-purple-600/40"
+							>Set Start</button>
+						)}
 					</div>
 					<AccordionSection title="Room Info" defaultOpen>
-						<div className="space-y-2">
-							<label className="block text-sm font-medium">Description</label>
-							<textarea
-								className="w-full px-3 py-2 bg-foreground/5 border border-foreground/10 rounded resize-none text-sm"
-								rows={4}
-								value={descDraft}
-								onChange={(e) => setDescDraft(e.target.value)}
-							/>
-							<div className="flex items-center justify-between">
-								<p className="text-xs text-foreground/50">Write a narrative or purpose for this room.</p>
-								<button
-									disabled={!selectedRoom || (selectedRoom?.meta?.description ?? '') === descDraft}
-									onClick={() => {
+						<div className="space-y-3">
+							<label className="block">
+								<span className="text-xs uppercase tracking-wide text-foreground/50">Room Name</span>
+								<input
+									className="mt-1 w-full px-2 py-1.5 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500"
+									value={roomNameDraft}
+									onChange={e => setRoomNameDraft(e.target.value)}
+									onBlur={() => {
 										if (!selectedRoom) return;
-										window.__editorSetRoomMeta?.(selectedRoom.id, (meta) => ({
+										window.__editorSetRoomMeta?.(selectedRoom.id, meta => ({
+											...meta,
+											name: roomNameDraft,
+										}));
+									}}
+									placeholder="e.g. Dark Dungeon Entrance"
+								/>
+							</label>
+							<label className="block">
+								<span className="text-xs uppercase tracking-wide text-foreground/50">Description</span>
+								<textarea
+									className="mt-1 w-full px-3 py-2 bg-foreground/5 border border-foreground/10 rounded resize-none text-sm focus:outline-none focus:ring focus:ring-indigo-500"
+									rows={4}
+									value={descDraft}
+									onChange={(e) => setDescDraft(e.target.value)}
+									onBlur={() => {
+										if (!selectedRoom) return;
+										window.__editorSetRoomMeta?.(selectedRoom.id, meta => ({
 											...meta,
 											description: descDraft,
 										}));
 									}}
-									className="px-2 py-1 text-xs font-medium rounded border border-foreground/20 disabled:opacity-40 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-700"
-								>Save</button>
-							</div>
+									placeholder="Narrative or purpose for this room…"
+								/>
+							</label>
 						</div>
 					</AccordionSection>
 					<AccordionSection title="Chest">
@@ -289,20 +307,13 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 						/>
 					</AccordionSection>
 					<AccordionSection title="Conversation">
-						<div className="space-y-2">
-							<label className="block text-sm font-medium">Conversation</label>
-							<div className="space-y-2">
-								<div className="flex items-center justify-between">
-									<span className="text-sm text-foreground/60">ID: {selectedRoom?.meta?.conversationId ?? 'none'}</span>
-									<button
-										onClick={openConversationEditor}
-										className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 rounded text-sm font-medium"
-									>Open Editor</button>
-								</div>
+						<div className="space-y-3">
+							<label className="block">
+								<span className="text-xs uppercase tracking-wide text-foreground/50">Conversation ID</span>
 								<input
 									type="text"
-									className="w-full px-3 py-2 bg-foreground/5 border border-foreground/10 rounded text-sm"
-									placeholder="conversation id"
+									className="mt-1 w-full px-3 py-2 bg-foreground/5 border border-foreground/10 rounded text-sm focus:outline-none focus:ring focus:ring-indigo-500"
+									placeholder="e.g. goblin_greeting"
 									value={convDraft}
 									onChange={(e) => setConvDraft(e.target.value)}
 									onBlur={() => {
@@ -313,6 +324,8 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 										}));
 									}}
 								/>
+							</label>
+							<div className="flex items-center justify-between">
 								<label className="flex items-center gap-2 text-xs font-medium cursor-pointer select-none">
 									<input
 										type="checkbox"
@@ -327,9 +340,12 @@ export default function EditorSidebar({ onSave, onLoad, onNew, currentGameId }) 
 										}}
 										className="w-4 h-4 rounded"
 									/>
-									<span>Repeatable conversation</span>
+									<span>Repeatable</span>
 								</label>
-								<p className="text-xs text-foreground/50">Set the conversation id and open the editor to edit content.</p>
+								<button
+									onClick={openConversationEditor}
+									className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 rounded text-xs font-semibold"
+								>Open Editor</button>
 							</div>
 						</div>
 					</AccordionSection>
@@ -377,31 +393,36 @@ function QuickActions({ globalDirty, commitGlobalMeta }) {
 	);
 }
 
-function ActionBar({ onSave, onLoad, onNew, globalDirty, commitGlobalMeta, gameNameDraft, gameDescDraft, tagsDraft, snapshot, isAuthenticated, currentGameId }) {
+function ActionBar({ onSave, onLoad, onNew, globalDirty, commitGlobalMeta, gameNameDraft, gameDescDraft, isAuthenticated, currentGameId }) {
 	const [saving, setSaving] = useState(false);
-	const [error, setError] = useState('');
+	const [message, setMessage] = useState({ text: '', type: '' });
+	const [confirmNew, setConfirmNew] = useState(false);
+
+	function showMessage(text, type = 'error') {
+		setMessage({ text, type });
+		if (type === 'success') setTimeout(() => setMessage({ text: '', type: '' }), 3000);
+	}
 
 	async function handleInlineSave() {
 		if (!isAuthenticated) {
-			alert('You must be logged in to save games');
+			showMessage('You must be logged in to save games.');
 			return;
 		}
 		try {
 			setSaving(true);
-			setError('');
+			setMessage({ text: '', type: '' });
 			if (globalDirty) commitGlobalMeta();
 			const state = window.RPGEditorBridge?.pullStateSnapshot?.();
 			if (!state || !state.rooms || state.rooms.length === 0) {
-				setError('No rooms created. Add rooms before saving.');
-				setSaving(false);
+				showMessage('No rooms created. Add rooms before saving.');
 				return;
 			}
 			const title = gameNameDraft.trim() || 'Untitled Adventure';
 			const description = gameDescDraft.trim();
 			await onSave({ title, description, gameContent: state });
-			alert('Game saved successfully!');
+			showMessage('Game saved!', 'success');
 		} catch (e) {
-			setError(e.message || 'Failed to save');
+			showMessage(e.message || 'Failed to save');
 		} finally {
 			setSaving(false);
 		}
@@ -410,27 +431,45 @@ function ActionBar({ onSave, onLoad, onNew, globalDirty, commitGlobalMeta, gameN
 	return (
 		<div className="mb-4 space-y-2">
 			<div className="flex gap-2">
-				<button
-					onClick={() => {
-						if (confirm('Start a new game? Unsaved changes will be lost.')) onNew?.();
-					}}
-					className="flex-1 px-3 py-2 rounded bg-foreground/10 hover:bg-foreground/20 text-xs font-semibold"
-					title="New Game"
-				>New</button>
-				<button
-					onClick={handleInlineSave}
-					disabled={!isAuthenticated || saving}
-					className="flex-1 px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-xs font-semibold"
-					title="Save Game"
-				>{saving ? 'Saving…' : 'Save'}</button>
-				<button
-					onClick={onLoad}
-					disabled={!isAuthenticated}
-					className="flex-1 px-3 py-2 rounded bg-green-600 hover:bg-green-700 disabled:opacity-40 text-xs font-semibold"
-					title="Load Game"
-				>Load</button>
+				{confirmNew ? (
+					<>
+						<span className="flex-1 text-[10px] text-foreground/60 self-center">Unsaved changes will be lost.</span>
+						<button
+							onClick={() => { setConfirmNew(false); onNew?.(); }}
+							className="px-2 py-1.5 rounded bg-red-600 hover:bg-red-700 text-xs font-semibold"
+						>Confirm</button>
+						<button
+							onClick={() => setConfirmNew(false)}
+							className="px-2 py-1.5 rounded bg-foreground/10 hover:bg-foreground/20 text-xs font-semibold"
+						>Cancel</button>
+					</>
+				) : (
+					<>
+						<button
+							onClick={() => setConfirmNew(true)}
+							className="flex-1 px-3 py-2 rounded bg-foreground/10 hover:bg-foreground/20 text-xs font-semibold"
+							title="New Game"
+						>New</button>
+						<button
+							onClick={handleInlineSave}
+							disabled={!isAuthenticated || saving}
+							className="flex-1 px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-xs font-semibold"
+							title="Save Game"
+						>{saving ? 'Saving…' : 'Save'}</button>
+						<button
+							onClick={onLoad}
+							disabled={!isAuthenticated}
+							className="flex-1 px-3 py-2 rounded bg-green-600 hover:bg-green-700 disabled:opacity-40 text-xs font-semibold"
+							title="Load Game"
+						>Load</button>
+					</>
+				)}
 			</div>
-			{error && <p className="text-red-400 text-xs">{error}</p>}
+			{message.text && (
+				<p className={`text-xs px-2 py-1 rounded ${message.type === 'success' ? 'text-green-400 bg-green-900/20' : 'text-red-400 bg-red-900/20'}`}>
+					{message.text}
+				</p>
+			)}
 			{currentGameId && <p className="text-[10px] text-foreground/40">Game ID: {currentGameId}</p>}
 		</div>
 	);
@@ -558,7 +597,7 @@ function EntityManager({ entitiesDraft, setEntitiesDraft, setGlobalDirty, rooms,
 								{entity.hostile && entity.drops?.length > 0 && ` • Drops: ${entity.drops.length}`}
 							</div>
 						</div>
-						<button onClick={() => removeEntity(entity.id)} className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]">Del</button>
+						<button onClick={() => removeEntity(entity.id)} className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]" title="Remove entity">×</button>
 					</div>
 				))}
 				{entitiesDraft.length === 0 && <p className="text-xs text-foreground/40">No entities defined yet.</p>}
@@ -580,10 +619,12 @@ function RoomEntityPicker({ entities, setEntities, selectedRoom, globalEntities 
 		updateMeta(meta => ({ ...meta, entities: next }));
 	};
 
+	const typeBadge = { monster: 'bg-red-900/40 text-red-300', boss: 'bg-orange-900/40 text-orange-300', person: 'bg-sky-900/40 text-sky-300' };
+
 	return (
 		<div className="space-y-2">
 			<p className="text-xs text-foreground/50">Select entities present in this room.</p>
-			<div className="flex flex-wrap gap-1">
+			<div className="flex flex-col gap-1.5">
 				{globalEntities.map(entity => {
 					const active = entities.includes(entity.id);
 					return (
@@ -591,9 +632,13 @@ function RoomEntityPicker({ entities, setEntities, selectedRoom, globalEntities 
 							key={entity.id}
 							type="button"
 							onClick={() => toggleEntity(entity.id)}
-							className={`px-2 py-1 rounded text-[11px] border ${active ? 'bg-blue-600 border-blue-500' : 'bg-foreground/5 border-foreground/15'}`}
+							className={`flex items-center gap-2 px-2.5 py-1.5 rounded text-xs border text-left ${active ? 'bg-blue-600/20 border-blue-500' : 'bg-foreground/5 border-foreground/15 hover:bg-foreground/10'}`}
 						>
-							{entity.name}
+							<span className="flex-1 font-medium">{entity.name}</span>
+							<span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold ${typeBadge[entity.type] ?? 'bg-foreground/10 text-foreground/50'}`}>
+								{entity.type}
+							</span>
+							{entity.hostile && <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-red-600/30 text-red-300">HOSTILE</span>}
 						</button>
 					);
 				})}
@@ -645,7 +690,7 @@ function ItemsManager({ itemsDraft, setItemsDraft, setGlobalDirty }) {
 							<div className="font-medium truncate">{item.name}</div>
 							<div className="text-foreground/50 text-[10px] truncate">{item.id}{item.description ? ` • ${item.description}` : ''}</div>
 						</div>
-						<button onClick={() => removeItem(item.id)} className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]">Del</button>
+						<button onClick={() => removeItem(item.id)} className="ml-2 px-2 py-0.5 bg-red-600 hover:bg-red-700 rounded text-[10px]" title="Remove item">×</button>
 					</div>
 				))}
 				{itemsDraft.length === 0 && <p className="text-xs text-foreground/40">No items defined yet.</p>}

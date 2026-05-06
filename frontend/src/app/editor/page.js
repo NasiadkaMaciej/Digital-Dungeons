@@ -18,6 +18,7 @@ function EditorPageContent() {
 	const [gameData, setGameData] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [convEditorActive, setConvEditorActive] = useState(false);
+	const [loadError, setLoadError] = useState('');
 
 	useEffect(() => {
 		const gameId = searchParams.get('gameId');
@@ -31,14 +32,9 @@ function EditorPageContent() {
 	// Reset editor canvas when game data changes
 	useEffect(() => {
 		if (gameData && window.__editorResetToInitial) {
-			console.log('[EditorPage] Game data changed, resetting editor with:', gameData);
 			// Small delay to ensure bridge is configured
 			setTimeout(() => {
-				try {
-					window.__editorResetToInitial();
-				} catch (e) {
-					console.warn('[EditorPage] Failed to reset editor:', e);
-				}
+				try { window.__editorResetToInitial(); } catch { }
 			}, 100);
 		}
 	}, [gameData]);
@@ -68,33 +64,21 @@ function EditorPageContent() {
 	const loadGame = async (gameId) => {
 		try {
 			const game = await gamesApi.getGameById(gameId);
-			console.log('[EditorPage] Loaded game from API:', game);
 			setCurrentGameId(game.game_id);
 			// game_content may arrive as a JSON string from the API; parse defensively
 			let content = game.game_content;
-			console.log('[EditorPage] Raw game_content type:', typeof content, 'value:', content);
 			if (typeof content === 'string') {
 				try {
 					content = JSON.parse(content);
-					console.log('[EditorPage] Parsed game_content:', content);
-				} catch (e) {
-					console.warn('[EditorPage] Failed to parse game_content JSON, falling back to empty object:', e);
+				} catch {
 					content = { rooms: [], selected: null, globalMeta: {} };
 				}
 			}
-			// Validate structure
-			if (!content || typeof content !== 'object') {
-				console.warn('[EditorPage] Invalid content structure, resetting:', content);
-				content = { rooms: [], selected: null, globalMeta: {} };
-			}
-			if (!Array.isArray(content.rooms)) {
-				console.warn('[EditorPage] Missing or invalid rooms array, resetting');
-				content.rooms = [];
-			}
-			console.log('[EditorPage] Final content to set:', content);
+			if (!content || typeof content !== 'object') content = { rooms: [], selected: null, globalMeta: {} };
+			if (!Array.isArray(content.rooms)) content.rooms = [];
 			setGameData(content);
 		} catch (err) {
-			alert('Failed to load game: ' + err.message);
+			setLoadError('Failed to load game: ' + err.message);
 		} finally {
 			setLoading(false);
 		}
@@ -125,20 +109,30 @@ function EditorPageContent() {
 	};
 
 	const handleNew = () => {
-		if (confirm('Start a new game? Unsaved changes will be lost.')) {
-			setCurrentGameId(null);
-			setGameData(null);
-			// Reset the canvas to initial sample data immediately without navigation
-			try { window.__editorResetToInitial?.(); } catch { }
-			// Optionally refresh route to clear any query params
-			router.replace('/editor');
-		}
+		// Confirmation is handled inline by ActionBar — call directly
+		setCurrentGameId(null);
+		setGameData(null);
+		setLoadError('');
+		try { window.__editorResetToInitial?.(); } catch { }
+		router.replace('/editor');
 	};
 
 	if (loading) {
 		return (
 			<div className="flex items-center justify-center h-screen">
 				<p className="text-foreground/60">Loading game...</p>
+			</div>
+		);
+	}
+
+	if (loadError) {
+		return (
+			<div className="flex flex-col items-center justify-center h-screen gap-4">
+				<p className="text-red-400">{loadError}</p>
+				<button
+					onClick={() => { setLoadError(''); router.replace('/editor'); }}
+					className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-sm font-semibold"
+				>Start New Game</button>
 			</div>
 		);
 	}

@@ -1,0 +1,17 @@
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: digital_dungeons
+      MARIADB_USER: ddungeons
+      MARIADB_PASSWORD: your_secure_password
+    volumes:
+      - ./backend/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
