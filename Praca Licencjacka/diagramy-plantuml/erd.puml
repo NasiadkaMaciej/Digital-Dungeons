@@ -1,6 +1,6 @@
 @startuml
 !include style.iuml
-title Digital Dungeons - Diagram ER
+title Digital Dungeons - Diagram ER (Baza danych)
 left to right direction
 
 entity "users" as USERS {

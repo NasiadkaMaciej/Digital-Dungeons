@@ -13,14 +13,14 @@ database "MySQL" as DB
 
 GC -> CP: Komenda tekstowa gracza
 CP -> GA: Sparsowana komenda
-GA --> GC: Zaktualizowany stan gry + odpowiedz
+GA --> GC: Zaktualizowany stan gry + odpowiedź
 GC -> MJ: PUT /api/playthroughs/:id\n(game_state JSON + token)
 MJ -> MJ: Weryfikacja tokenu JWT
 MJ -> PR: Przekazanie zadania
-PR -> PM: Aktualizacja postepu rozgrywki
+PR -> PM: Aktualizacja postępu rozgrywki
 PM -> DB: UPDATE playthroughs SET game_state
 DB --> PM: Potwierdzenie zapisu
 PM --> PR: Sukces
 PR --> GC: 200 OK
-GC -> GC: Wyswietlenie odpowiedzi tekstowej
+GC -> GC: Wyświetlenie odpowiedzi tekstowej
 @enduml
