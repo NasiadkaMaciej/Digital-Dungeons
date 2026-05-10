@@ -1,0 +1,62 @@
+services:
+
+  ## ── Database ──────────────────────────────────────────────────────────────
+  db:
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: digital_dungeons
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./backend/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 15s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ## ── Backend API ───────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${PORT}:${PORT}"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DB_HOST: db
+      CORS_ORIGIN: https://${DOMAIN}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  ## ── Frontend ──────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://${DOMAIN}/api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT}:3000"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
