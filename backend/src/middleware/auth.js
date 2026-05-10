@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 
+const JWT_ALGORITHMS = ['HS256'];
+
 // Validation helper
 const validateRequest = (req, res) => {
 	const errors = validationResult(req);
@@ -13,13 +15,15 @@ const validateRequest = (req, res) => {
 
 const auth = (req, res, next) => {
 	try {
-		const token = req.header('Authorization')?.replace('Bearer ', '');
+		const token = req.cookies?.authToken;
 
 		if (!token) {
 			return res.status(401).json({ error: 'Access denied. No token provided.' });
 		}
 
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+			algorithms: JWT_ALGORITHMS,
+		});
 		req.user = decoded;
 		next();
 	} catch (error) {
@@ -29,9 +33,11 @@ const auth = (req, res, next) => {
 
 const optionalAuth = (req, res, next) => {
 	try {
-		const token = req.header('Authorization')?.replace('Bearer ', '');
+		const token = req.cookies?.authToken;
 		if (token) {
-			const decoded = jwt.verify(token, process.env.JWT_SECRET);
+			const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+				algorithms: JWT_ALGORITHMS,
+			});
 			req.user = decoded;
 		}
 		next();

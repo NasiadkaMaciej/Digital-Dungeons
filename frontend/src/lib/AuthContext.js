@@ -5,33 +5,15 @@ import { authApi } from '@/lib/api';
 
 const AuthContext = createContext(null);
 
-const isTokenExpired = (token) => {
-	try {
-		const payload = JSON.parse(atob(token.split('.')[1]));
-		return payload.exp * 1000 < Date.now();
-	} catch {
-		return true;
-	}
-};
-
 export function AuthProvider({ children }) {
 	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 
-	// Check if user is logged in on mount
+	// On mount, attempt to restore session via the httpOnly cookie.
+	// The cookie is sent automatically by the browser – no localStorage needed.
 	useEffect(() => {
-		const token = localStorage.getItem('authToken');
-		if (token) {
-			if (isTokenExpired(token)) {
-				localStorage.removeItem('authToken');
-				setLoading(false);
-			} else {
-				loadUser();
-			}
-		} else {
-			setLoading(false);
-		}
+		loadUser();
 	}, []);
 
 	const loadUser = async () => {
@@ -39,9 +21,8 @@ export function AuthProvider({ children }) {
 			const userData = await authApi.getCurrentUser();
 			setUser(userData);
 			setError(null);
-		} catch (err) {
-			console.error('Failed to load user:', err);
-			localStorage.removeItem('authToken');
+		} catch {
+			// 401 = not logged in; any other error is also treated as logged-out
 			setUser(null);
 		} finally {
 			setLoading(false);
@@ -52,7 +33,7 @@ export function AuthProvider({ children }) {
 		try {
 			setError(null);
 			const response = await authApi.login(email, password);
-			localStorage.setItem('authToken', response.token);
+			// Cookie is set server-side; just store the user object in state
 			setUser(response.user);
 			return { success: true };
 		} catch (err) {
@@ -66,7 +47,6 @@ export function AuthProvider({ children }) {
 		try {
 			setError(null);
 			const response = await authApi.register(username, email, password);
-			localStorage.setItem('authToken', response.token);
 			setUser(response.user);
 			return { success: true };
 		} catch (err) {
@@ -76,10 +56,16 @@ export function AuthProvider({ children }) {
 		}
 	};
 
-	const logout = () => {
-		localStorage.removeItem('authToken');
-		setUser(null);
-		setError(null);
+	const logout = async () => {
+		try {
+			// Ask the server to clear the httpOnly cookie
+			await authApi.logout();
+		} catch {
+			// Best-effort – clear local state regardless
+		} finally {
+			setUser(null);
+			setError(null);
+		}
 	};
 
 	const value = {
