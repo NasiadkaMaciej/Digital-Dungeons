@@ -1,17 +1,70 @@
 services:
+  ## ── Database ──────────────────────────────────────────────────────────────
   db:
-    image: mariadb:11
+    image: mariadb:latest
     restart: unless-stopped
-    ports:
-      - "3306:3306"
     environment:
-      MARIADB_ROOT_PASSWORD: root
-      MARIADB_DATABASE: digital_dungeons
-      MARIADB_USER: ddungeons
-      MARIADB_PASSWORD: your_secure_password
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./backend/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
       - db_data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ## ── Backend (Dev) ─────────────────────────────────────────────────────────
+  backend:
+    image: node:alpine
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - NODE_ENV=development
+      - PORT=${PORT}
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=http://localhost:${FRONTEND_PORT}
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  ## ── Frontend (Dev) ────────────────────────────────────────────────────────
+  frontend:
+    image: node:alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "${FRONTEND_PORT}:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=/api
+      - BACKEND_PORT=${PORT}
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   db_data:

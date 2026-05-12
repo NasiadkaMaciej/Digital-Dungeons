@@ -7,17 +7,29 @@ const Like = require('../models/Like');
 const Playthrough = require('../models/Playthrough');
 const { auth, optionalAuth } = require('../middleware/auth');
 
-// Get user profile by ID
-router.get('/:userId', async (req, res, next) => {
+// Get user profile by ID – email only returned to the owner (IDOR fix)
+router.get('/:userId', optionalAuth, async (req, res, next) => {
 	try {
 		const user = await User.findById(req.params.userId);
 		if (!user) {
 			return res.status(404).json({ error: 'User not found' });
 		}
 
-		// Remove sensitive data
-		delete user.password;
-		res.json(user);
+		const isOwner = req.user && parseInt(req.user.userId) === parseInt(req.params.userId);
+
+		// Public profile – never expose email or last_login to strangers
+		const profile = {
+			user_id: user.user_id,
+			username: user.username,
+			profile_bio: user.profile_bio,
+			join_date: user.join_date,
+			...(isOwner && {
+				email: user.email,
+				last_login: user.last_login,
+			}),
+		};
+
+		res.json(profile);
 	} catch (error) {
 		next(error);
 	}
@@ -74,7 +86,7 @@ router.get('/:userId/likes', async (req, res, next) => {
 	}
 });
 
-// Get user's playthroughs
+// Get user's playthroughs (own only)
 router.get('/:userId/playthroughs', auth, async (req, res, next) => {
 	try {
 		// Only allow users to see their own playthroughs
