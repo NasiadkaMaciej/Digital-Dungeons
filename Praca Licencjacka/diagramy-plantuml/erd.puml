@@ -2,6 +2,13 @@
 !include style.iuml
 title Digital Dungeons - Diagram ER (Baza danych)
 left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+skinparam nodesep 140
+skinparam ranksep 120
+skinparam horizontalLabelDistance 80
+skinparam verticalLabelDistance 24
+skinparam entityPadding 12
 
 entity "users" as USERS {
   * user_id : INT <<PK>>
@@ -40,14 +47,6 @@ entity "playthroughs" as PLAYTHROUGHS {
   last_active : DATETIME
 }
 
-entity "likes" as LIKES {
-  * like_id : INT <<PK>>
-  --
-  user_id : INT <<FK>>
-  game_id : INT <<FK>>
-  date_liked : DATETIME
-}
-
 entity "comments" as COMMENTS {
   * comment_id : INT <<PK>>
   --
@@ -58,11 +57,25 @@ entity "comments" as COMMENTS {
   is_edited : BOOLEAN
 }
 
-USERS ||--o{ GAMES : tworzy
-GAMES ||--o{ PLAYTHROUGHS : posiada
-USERS ||--o{ PLAYTHROUGHS : prowadzi
-GAMES ||--o{ COMMENTS : ma
-USERS ||--o{ COMMENTS : dodaje
-USERS ||--o{ LIKES : wystawia
-GAMES ||--o{ LIKES : otrzymuje
+entity "likes" as LIKES {
+  * like_id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  game_id : INT <<FK>>
+  date_liked : DATETIME
+}
+
+GAMES ||--o{ PLAYTHROUGHS : "\nrozgrywki\n0..*"
+USERS ||--o{ PLAYTHROUGHS : "gracz\n0..*"
+USERS ||--o{ GAMES : "autor\n1..*"
+GAMES ||--o{ COMMENTS : "komentarze\n0..*"
+USERS ||--o{ COMMENTS : "autor_komentarza\n0..*"
+USERS ||--o{ LIKES : "użytkownik\n0..*"
+GAMES ||--o{ LIKES : "polubienia\n0..*"
+
+' Hidden edges to influence layout
+USERS -[hidden]-> GAMES
+GAMES -[hidden]-> PLAYTHROUGHS
+GAMES -[hidden]-> COMMENTS
+COMMENTS -[hidden]-> LIKES
 @enduml
