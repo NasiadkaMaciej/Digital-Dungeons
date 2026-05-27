@@ -1,5 +1,6 @@
 /**
  * API client for Digital Dungeons backend
+ * Auth is handled via httpOnly cookies – no token management needed here.
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -14,26 +15,20 @@ class ApiError extends Error {
 }
 
 /**
- * Make HTTP request to backend API
+ * Make HTTP request to backend API.
+ * credentials: 'include' ensures the httpOnly auth cookie is sent automatically.
  */
 async function apiRequest(endpoint, options = {}) {
 	const url = `${API_BASE_URL}${endpoint}`;
 
 	const config = {
 		...options,
+		credentials: 'include',
 		headers: {
 			'Content-Type': 'application/json',
 			...options.headers,
 		},
 	};
-
-	// Add auth token if available
-	if (typeof window !== 'undefined') {
-		const token = localStorage.getItem('authToken');
-		if (token) {
-			config.headers['Authorization'] = `Bearer ${token}`;
-		}
-	}
 
 	try {
 		const response = await fetch(url, config);
@@ -70,6 +65,10 @@ export const authApi = {
 			method: 'POST',
 			body: JSON.stringify({ email, password }),
 		});
+	},
+
+	async logout() {
+		return apiRequest('/auth/logout', { method: 'POST' });
 	},
 
 	async getCurrentUser() {

@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -13,15 +15,35 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
+// Security headers
+app.use(helmet());
+
+// CORS – credentials required for httpOnly cookies
 app.use(cors({
 	origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
 	credentials: true
 }));
+
+// Cookie parser (must come before auth middleware)
+app.use(cookieParser());
+
+// Body parsers
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Routes
+// Content-Type enforcement for mutating requests
+app.use((req, res, next) => {
+	if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+		const contentLength = req.headers['content-length'];
+		const hasBody = contentLength && parseInt(contentLength) > 0;
+		if (hasBody && !req.is('application/json')) {
+			return res.status(415).json({ error: 'Unsupported Media Type. Use application/json.' });
+		}
+	}
+	next();
+});
+
+// Routes (rate limiting applied per-route in auth.js)
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/users', usersRoutes);

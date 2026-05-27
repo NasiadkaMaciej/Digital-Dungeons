@@ -1,12 +1,39 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const { body } = require('express-validator');
 const User = require('../models/User');
 const { auth, validateRequest } = require('../middleware/auth');
 
+// Rate limiter for login/register – 20 attempts per 15 minutes per IP
+const authLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 20,
+	message: { error: 'Too many attempts, please try again later.' },
+	standardHeaders: true,
+	legacyHeaders: false,
+});
+
+// httpOnly cookie options
+const COOKIE_OPTIONS = {
+	httpOnly: true,
+	secure: process.env.NODE_ENV === 'production',
+	sameSite: 'strict',
+	maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+	path: '/',
+};
+
+function signToken(payload) {
+	return jwt.sign(payload, process.env.JWT_SECRET, {
+		expiresIn: process.env.JWT_EXPIRE || '7d',
+		algorithm: 'HS256',
+	});
+}
+
 // Register
 router.post('/register',
+	authLimiter,
 	[
 		body('username').trim().isLength({ min: 3, max: 50 }).withMessage('Username must be 3-50 characters'),
 		body('email').isEmail().normalizeEmail().withMessage('Invalid email'),
@@ -29,19 +56,13 @@ router.post('/register',
 				return res.status(400).json({ error: 'Username already taken' });
 			}
 
-			// Create user
+			// Create user and set auth cookie
 			const userId = await User.create({ username, email, password });
+			const token = signToken({ userId, username });
 
-			// Generate token
-			const token = jwt.sign(
-				{ userId, username },
-				process.env.JWT_SECRET,
-				{ expiresIn: process.env.JWT_EXPIRE }
-			);
-
+			res.cookie('authToken', token, COOKIE_OPTIONS);
 			res.status(201).json({
 				message: 'User registered successfully',
-				token,
 				user: { userId, username, email }
 			});
 		} catch (error) {
@@ -52,6 +73,7 @@ router.post('/register',
 
 // Login
 router.post('/login',
+	authLimiter,
 	[
 		body('email').isEmail().normalizeEmail(),
 		body('password').notEmpty()
@@ -74,15 +96,11 @@ router.post('/login',
 
 			await User.updateLastLogin(user.user_id);
 
-			const token = jwt.sign(
-				{ userId: user.user_id, username: user.username },
-				process.env.JWT_SECRET,
-				{ expiresIn: process.env.JWT_EXPIRE }
-			);
+			const token = signToken({ userId: user.user_id, username: user.username });
 
+			res.cookie('authToken', token, COOKIE_OPTIONS);
 			res.json({
 				message: 'Login successful',
-				token,
 				user: {
 					userId: user.user_id,
 					username: user.username,
@@ -95,6 +113,12 @@ router.post('/login',
 	}
 );
 
+// Logout – clears the auth cookie
+router.post('/logout', (req, res) => {
+	res.clearCookie('authToken', { path: '/' });
+	res.json({ message: 'Logged out successfully' });
+});
+
 // Get current user
 router.get('/me', auth, async (req, res, next) => {
 	try {
@@ -103,7 +127,6 @@ router.get('/me', auth, async (req, res, next) => {
 			return res.status(404).json({ error: 'User not found' });
 		}
 
-		// Return in same format as login/register
 		res.json({
 			userId: user.user_id,
 			username: user.username,
