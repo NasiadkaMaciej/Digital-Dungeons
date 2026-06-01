@@ -21,18 +21,11 @@ const checkGameOwnership = async (gameId, userId, res) => {
 // Get all published games
 router.get('/', optionalAuth, async (req, res, next) => {
 	try {
-		const { limit = 20, offset = 0, tags } = req.query;
-		const safeLimit = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-		const safeOffset = Math.max(parseInt(offset) || 0, 0);
+		const { tags } = req.query;
 		const tagsArray = tags
 			? (Array.isArray(tags) ? tags : tags.split(',')).map(tag => tag.trim()).filter(tag => tag)
 			: [];
-		const games = await Game.findAll({
-			limit: safeLimit,
-			offset: safeOffset,
-			published: true,
-			tags: tagsArray
-		});
+		const games = await Game.findAll({ published: true, tags: tagsArray });
 		res.json(games);
 	} catch (error) {
 		next(error);

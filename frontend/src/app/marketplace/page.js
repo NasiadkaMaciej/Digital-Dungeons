@@ -10,16 +10,14 @@ export default function MarketplacePage() {
 	const { isAuthenticated } = useAuth();
 	const router = useRouter();
 
-	const [games, setGames] = useState([]);
 	const [allGames, setAllGames] = useState([]);
+	const [displayCount, setDisplayCount] = useState(12);
 	const [loading, setLoading] = useState(true);
-	const [loadingMore, setLoadingMore] = useState(false);
 	const [likedGames, setLikedGames] = useState(new Set());
 	const [search, setSearch] = useState("");
 	const [selectedTags, setSelectedTags] = useState(new Set());
 	const [availableTags, setAvailableTags] = useState([]);
 	const [sortBy, setSortBy] = useState('newest');
-	const [offset, setOffset] = useState(0);
 	const GAMES_PER_PAGE = 12;
 
 	useEffect(() => {
@@ -28,32 +26,24 @@ export default function MarketplacePage() {
 
 	const loadGames = async () => {
 		setLoading(true);
-		setOffset(0);
+		setDisplayCount(GAMES_PER_PAGE);
 		try {
-			const tagsParam = selectedTags.size > 0 ? Array.from(selectedTags).join(',') : '';
-			const publishedGames = await gamesApi.getAllGames(tagsParam ? `?tags=${tagsParam}` : '');
+			const tagsParam = selectedTags.size > 0 ? `?tags=${Array.from(selectedTags).join(',')}` : '';
+			const publishedGames = await gamesApi.getAllGames(tagsParam);
 			setAllGames(publishedGames);
-			setGames(publishedGames.slice(0, GAMES_PER_PAGE));
 
-			// Extract all unique tags from games
 			const tags = new Set();
-			publishedGames.forEach((game) => {
-				if (game.tags && Array.isArray(game.tags)) {
-					game.tags.forEach(tag => tags.add(tag));
-				}
-			});
+			publishedGames.forEach(game => game.tags?.forEach(tag => tags.add(tag)));
 			setAvailableTags(Array.from(tags).sort());
 
-			// Load liked status for authenticated users
 			if (isAuthenticated) {
 				const likeChecks = await Promise.allSettled(
-					publishedGames.map((game) => likesApi.checkLike(game.game_id)),
+					publishedGames.map(game => likesApi.checkLike(game.game_id))
 				);
 				const liked = new Set();
-				likeChecks.forEach((result, index) => {
-					if (result.status === 'fulfilled' && result.value.liked) {
-						liked.add(publishedGames[index].game_id);
-					}
+				likeChecks.forEach((result, i) => {
+					if (result.status === 'fulfilled' && result.value.liked)
+						liked.add(publishedGames[i].game_id);
 				});
 				setLikedGames(liked);
 			}
@@ -62,15 +52,6 @@ export default function MarketplacePage() {
 		} finally {
 			setLoading(false);
 		}
-	};
-
-	const loadMoreGames = () => {
-		setLoadingMore(true);
-		const newOffset = offset + GAMES_PER_PAGE;
-		const newGames = allGames.slice(0, newOffset + GAMES_PER_PAGE);
-		setGames(newGames);
-		setOffset(newOffset);
-		setLoadingMore(false);
 	};
 
 	const handleLike = async (gameId) => {
@@ -89,23 +70,15 @@ export default function MarketplacePage() {
 					newSet.delete(gameId);
 					return newSet;
 				});
-				setGames(
-					games.map((g) =>
-						g.game_id === gameId
-							? { ...g, likes_count: Math.max(0, g.likes_count - 1) }
-							: g,
-					),
-				);
+				setAllGames(prev => prev.map(g =>
+					g.game_id === gameId ? { ...g, likes_count: Math.max(0, g.likes_count - 1) } : g
+				));
 			} else {
 				await likesApi.likeGame(gameId);
 				setLikedGames((prev) => new Set(prev).add(gameId));
-				setGames(
-					games.map((g) =>
-						g.game_id === gameId
-							? { ...g, likes_count: g.likes_count + 1 }
-							: g,
-					),
-				);
+				setAllGames(prev => prev.map(g =>
+					g.game_id === gameId ? { ...g, likes_count: g.likes_count + 1 } : g
+				));
 			}
 		} catch (err) {
 			alert('Failed to update like: ' + err.message);
@@ -120,36 +93,24 @@ export default function MarketplacePage() {
 		);
 	}
 
-	// Filtrowanie gier po tytule i autorze
-	const filteredGames = games.filter(
-		(game) =>
+	const sortedGames = [...allGames]
+		.filter(game =>
 			game.title.toLowerCase().includes(search.toLowerCase()) ||
 			(game.author_name && game.author_name.toLowerCase().includes(search.toLowerCase()))
-	);
+		)
+		.sort((a, b) => {
+			switch(sortBy) {
+				case 'newest':   return new Date(b.create_date) - new Date(a.create_date);
+				case 'oldest':   return new Date(a.create_date) - new Date(b.create_date);
+				case 'title-asc': return a.title.localeCompare(b.title);
+				case 'title-desc': return b.title.localeCompare(a.title);
+				case 'plays':    return (b.plays_count || 0) - (a.plays_count || 0);
+				case 'likes':    return (b.likes_count || 0) - (a.likes_count || 0);
+				default:         return 0;
+			}
+		});
 
-	// Sortowanie gier
-	const getSortedGames = () => {
-		const gamesCopy = [...filteredGames];
-
-		switch(sortBy) {
-			case 'newest':
-				return gamesCopy.sort((a, b) => new Date(b.create_date) - new Date(a.create_date));
-			case 'oldest':
-				return gamesCopy.sort((a, b) => new Date(a.create_date) - new Date(b.create_date));
-			case 'title-asc':
-				return gamesCopy.sort((a, b) => a.title.localeCompare(b.title));
-			case 'title-desc':
-				return gamesCopy.sort((a, b) => b.title.localeCompare(a.title));
-			case 'plays':
-				return gamesCopy.sort((a, b) => (b.plays_count || 0) - (a.plays_count || 0));
-			case 'likes':
-				return gamesCopy.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
-			default:
-				return gamesCopy;
-		}
-	};
-
-	const sortedGames = getSortedGames();
+	const visibleGames = sortedGames.slice(0, displayCount);
 
 	const toggleTag = (tag) => {
 		setSelectedTags((prev) => {
@@ -234,7 +195,7 @@ export default function MarketplacePage() {
 				</div>
 			)}
 
-		{sortedGames.length === 0 ? (
+		{visibleGames.length === 0 ? (
 			<div className="text-center py-12 bg-background border-1 border-foreground/5 rounded-lg font-mono">
 				<p className="text-foreground/60">
 					No games found{' '}
@@ -244,7 +205,7 @@ export default function MarketplacePage() {
 		) : (
 			<>
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				{sortedGames.map((game) => (
+				{visibleGames.map((game) => (
 						<Link
 							href={`/game/${game.game_id}`}
 							key={game.game_id}
@@ -366,14 +327,13 @@ export default function MarketplacePage() {
 					))}
 				</div>
 
-			{games.length < allGames.length && (
+			{displayCount < sortedGames.length && (
 				<div className="flex justify-center mt-8">
 					<button
-						onClick={loadMoreGames}
-						disabled={loadingMore}
-						className="px-6 py-3 bg-red-500 hover:bg-red-700 disabled:bg-foreground/20 disabled:cursor-not-allowed rounded-md font-medium transition-colors"
+						onClick={() => setDisplayCount(prev => prev + GAMES_PER_PAGE)}
+						className="px-6 py-3 bg-red-500 hover:bg-red-700 rounded-md font-medium transition-colors"
 					>
-						{loadingMore ? 'Loading...' : `Load More (${allGames.length - games.length} more)`}
+						Load More
 					</button>
 				</div>
 			)}

@@ -33,9 +33,10 @@ class Game {
 		return rows[0];
 	}
 
-	static async findAll({ limit = 20, offset = 0, published = true, tags = [] }) {
-		let query = `SELECT g.game_id, g.title, g.description, g.create_date, g.likes_count, g.plays_count, g.game_content,
-              u.username as author_name
+	static async findAll({ published = true, tags = [] }) {
+		let query = `SELECT g.game_id, g.title, g.description, g.create_date, g.likes_count, g.plays_count,
+              u.username as author_name,
+              JSON_EXTRACT(g.game_content, '$.globalMeta.tags') as tags_json
        FROM games g
        JOIN users u ON g.author_id = u.user_id
        WHERE g.is_published = ?`;
@@ -50,18 +51,13 @@ class Game {
 			params.push(...tags);
 		}
 
-		query += ` ORDER BY g.create_date DESC LIMIT ? OFFSET ?`;
-		params.push(limit, offset);
+		query += ` ORDER BY g.create_date DESC`;
 
 		const [rows] = await db.execute(query, params);
-		return rows.map(row => {
-			const content = parseJSON(row.game_content);
-			return {
-				...row,
-				game_content: content,
-				tags: content?.globalMeta?.tags || []
-			};
-		});
+		return rows.map(({ tags_json, ...row }) => ({
+			...row,
+			tags: parseJSON(tags_json) || []
+		}));
 	}
 
 	static async findByAuthor(authorId, onlyPublished = false) {
