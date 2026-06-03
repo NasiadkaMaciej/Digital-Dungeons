@@ -1,14 +1,14 @@
 @startuml
 !include style.iuml
-title Digital Dungeons - Diagram ER (Baza danych)
-left to right direction
+hide footbox
+top to bottom direction
 skinparam linetype ortho
 skinparam shadowing false
-skinparam nodesep 140
-skinparam ranksep 120
-skinparam horizontalLabelDistance 80
+skinparam nodesep 40
+skinparam ranksep 70
+skinparam horizontalLabelDistance 120
 skinparam verticalLabelDistance 24
-skinparam entityPadding 12
+skinparam entityPadding 22
 
 entity "users" as USERS {
   * user_id : INT <<PK>>
@@ -46,7 +46,6 @@ entity "playthroughs" as PLAYTHROUGHS {
   start_date : DATETIME
   last_active : DATETIME
 }
-
 entity "comments" as COMMENTS {
   * comment_id : INT <<PK>>
   --
@@ -65,7 +64,10 @@ entity "likes" as LIKES {
   date_liked : DATETIME
 }
 
-GAMES ||--o{ PLAYTHROUGHS : "\nrozgrywki\n0..*"
+
+
+' Zakomentowane widoczne relacje (przenoszenie tabel przed łączeniem)
+'GAMES ||--o{ PLAYTHROUGHS : "\nrozgrywki\n0..*"
 USERS ||--o{ PLAYTHROUGHS : "gracz\n0..*"
 USERS ||--o{ GAMES : "autor\n1..*"
 GAMES ||--o{ COMMENTS : "komentarze\n0..*"
@@ -73,9 +75,25 @@ USERS ||--o{ COMMENTS : "autor_komentarza\n0..*"
 USERS ||--o{ LIKES : "użytkownik\n0..*"
 GAMES ||--o{ LIKES : "polubienia\n0..*"
 
-' Hidden edges to influence layout
+' Hidden edges to influence layout: arrange as top/mid/bottom rows
+' Top row: USERS and COMMENTS
+USERS -[hidden]-> COMMENTS
+
+' Middle row: GAMES centered
+USERS -[hidden]-> GAMES
+COMMENTS -[hidden]-> GAMES
+
+' Bottom row: PLAYTHROUGHS and LIKES
+PLAYTHROUGHS -[hidden]-> LIKES
+PLAYTHROUGHS -[hidden]-> GAMES
+LIKES -[hidden]-> GAMES
+
+' Additional hidden chains to enforce rows and columns
+USERS -[hidden]-> COMMENTS
+USERS -[hidden]-> COMMENTS
+COMMENTS -[hidden]-> GAMES
 USERS -[hidden]-> GAMES
 GAMES -[hidden]-> PLAYTHROUGHS
-GAMES -[hidden]-> COMMENTS
-COMMENTS -[hidden]-> LIKES
+GAMES -[hidden]-> LIKES
+PLAYTHROUGHS -[hidden]-> LIKES
 @enduml

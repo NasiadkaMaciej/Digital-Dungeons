@@ -1,6 +1,8 @@
 @startuml
 !include style.iuml
-title Krok rozgrywki (komenda gracza)
+hide footbox
+skinparam ParticipantPadding 24
+skinparam BoxPadding 10
 
 autonumber
 participant "GameConsole (React)" as GC

@@ -1,7 +1,7 @@
 ' Wspolny styl dla diagramow w pracy dyplomowej
 skinparam backgroundColor #FFFFFF
-skinparam defaultFontName "Segoe UI"
-skinparam defaultFontSize 13
+skinparam defaultFontName "Book Antiqua"
+skinparam defaultFontSize 16
 skinparam ArrowColor #1F2937
 skinparam ArrowThickness 1
 skinparam Shadowing false

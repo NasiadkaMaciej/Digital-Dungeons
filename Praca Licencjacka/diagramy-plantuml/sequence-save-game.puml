@@ -1,6 +1,8 @@
 @startuml
 !include style.iuml
-title Zapis gry przez edytor
+hide footbox
+skinparam ParticipantPadding 24
+skinparam BoxPadding 10
 
 autonumber
 participant "Edytor (React + p5.js)" as E

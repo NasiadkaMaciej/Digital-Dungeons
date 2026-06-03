@@ -1,7 +1,16 @@
 @startuml
 !include style.iuml
-title Digital Dungeons - Diagram przypadków użycia
-left to right direction
+' Layout tuned for narrow/tall (approx. 1:2 width:height)
+top to bottom direction
+skinparam nodesep 28
+skinparam ranksep 18
+skinparam usecaseFontSize 12
+skinparam usecase {
+  BackgroundColor #EFF6FF
+  BorderColor #1D4ED8
+  FontColor #0F172A
+}
+hide footbox
 
 actor "Gość" as Guest
 actor "Zalogowany użytkownik" as User
@@ -13,14 +22,14 @@ Creator -|> User
 rectangle "Digital Dungeons" {
   usecase "Rejestracja" as UC1
   usecase "Logowanie" as UC2
-  usecase "Przeglądanie marketplace" as UC3
+  usecase "Przeglądanie\nmarketplace" as UC3
   usecase "Tworzenie gry" as UC4
   usecase "Edycja gry" as UC5
   usecase "Usunięcie gry" as UC6
   usecase "Publikacja gry" as UC7
-  usecase "Uruchomienie rozgrywki" as UC8
-  usecase "Zapis/Odczyt stanu gry" as UC9
-  usecase "Dodawanie komentarza" as UC10
+  usecase "Uruchomienie\nrozgrywki" as UC8
+  usecase "Zapis/Odczyt\nstanu gry" as UC9
+  usecase "Dodawanie\nkomentarza" as UC10
   usecase "Polubienie gry" as UC11
   usecase "Edycja profilu" as UC12
 }
@@ -40,4 +49,17 @@ Creator --> UC6
 Creator --> UC7
 
 UC8 .> UC9 : <<include>>
+
+' Hidden links to force vertical stacking (narrow/tall layout)
+UC1 -[hidden]-> UC2
+UC2 -[hidden]-> UC3
+UC3 -[hidden]-> UC4
+UC4 -[hidden]-> UC5
+UC5 -[hidden]-> UC6
+UC6 -[hidden]-> UC7
+UC7 -[hidden]-> UC8
+UC8 -[hidden]-> UC9
+UC9 -[hidden]-> UC10
+UC10 -[hidden]-> UC11
+UC11 -[hidden]-> UC12
 @enduml

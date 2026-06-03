@@ -1,6 +1,8 @@
 @startuml
 !include style.iuml
-title Logowanie użytkownika
+hide footbox
+skinparam ParticipantPadding 24
+skinparam BoxPadding 10
 
 autonumber
 actor "Przeglądarka (klient)" as K
