@@ -2,6 +2,6 @@
 
 Diagram pokazuje przebieg logowania do aplikacji.
 
-Proces rozpoczyna sie w przegladarce, ktora wysyla zadanie `POST /api/auth/login` z adresem e-mail i haslem. Middleware Express przekazuje zadanie do trasy `auth.js`, a ta pobiera dane uzytkownika z modelu `User` na podstawie adresu e-mail. Po odebraniu rekordu aplikacja weryfikuje haslo za pomoca `bcrypt`.
+Proces rozpoczyna się w przeglądarce, która wysyła żądanie POST /api/auth/login z adresem e-mail i hasłem. Middleware Express przekazuje żądanie do trasy auth.js, a ta pobiera dane użytkownika z modelu User na podstawie adresu e-mail. Po odebraniu rekordu aplikacja weryfikuje hasło za pomocą bcrypt. 
 
-Jesli dane sa poprawne, system generuje token JWT i odsyla odpowiedz `200 OK` wraz z tokenem. Klient zapisuje token w `localStorage`, aby wykorzystywac go przy kolejnych operacjach wymagajacych autoryzacji.
+Jeśli dane są poprawne, system generuje token JWT, ustawia go jako ciasteczko httpOnly i odsyła odpowiedz 200 OK z danymi użytkownika. Ciasteczko jest następnie automatycznie dołączane przez przeglądarkę do kolejnych żądań wymagających autoryzacji, bez konieczności jawnego zarządzania tokenem po stronie klienta. 

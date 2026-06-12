@@ -19,5 +19,5 @@ R -> R: Weryfikacja hasła (bcrypt)
 R -> J: Generowanie tokenu
 J --> R: Token JWT
 R --> K: 200 OK + token
-K -> K: Zapis tokenu w localStorage
+K -> K: Zapis tokenu
 @enduml
